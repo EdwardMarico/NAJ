@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games Library</title>
+    <link rel="icon" type="image/png" href="Logoicon1.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <a href="index.html" class="logo">
+                <img src="Logoicon1.png" alt="Logo">
+                <span id="logoText" class="logo-text">NAJ</span>
+            </a>
+            <div class="menu">
+                <div class="hamburger" id="hamburgerMenu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="menu-card">
+        <h2>Menu</h2>
+        <!-- <button onclick="location.href='credit.html'">Credit Website</button> -->
+        <button onclick="location.href='games.html'">Games Library</button>
+        <button onclick="location.href='settings.html'">Settings</button>
+    </div>
+
+    <main class="library-container">
+        <!-- กล่องส่วนหัวของ Library -->
+        <div class="library-header">
+            <h1 class="library-title">Library</h1>
+            <button id="openModalBtn" class="add-game-btn">Add Game</button>
+        </div>
+
+        <div class="game-list" id="gameList"></div>
+    </main>
+
+    <!-- Modal Pop-up (ใช้ร่วมกันทั้ง Add และ Edit) -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modalTitle">Add New Game</h2>
+            <form id="gameForm">
+                <!-- เก็บ ID ของเกมเวลากดแก้ไข -->
+                <input type="hidden" id="gameId">
+                
+                <label>Game Title:</label>
+                <input type="text" id="gameTitle" placeholder="เช่น Hogwarts Legacy" required>
+                
+                <label>Action Link (URL):</label>
+                <input type="url" id="gameUrl" placeholder="https://example.com/install" required>
+                
+                <button type="submit" id="submitBtn" class="submit-btn">Save Game</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
