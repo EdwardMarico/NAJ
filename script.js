@@ -49,34 +49,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- 5. MODAL & FORM EVENTS ----------
     const modal = document.getElementById("gameModal");
-    const openModalBtn = document.getElementById("openModalBtn");
+    const openModalBtn = document.getElementById("addGameBtn") || document.getElementById("openModalBtn");
     const closeModalBtn = document.querySelector(".close-btn");
     const gameForm = document.getElementById("gameForm");
     const modalTitle = document.getElementById("modalTitle");
     const deleteBtn = document.getElementById("deleteBtn");
+    const submitBtn = document.getElementById("submitBtn");
 
     // เปิด Pop-up Add Game
     if (openModalBtn) {
-        openModalBtn.onclick = () => {
+        openModalBtn.addEventListener("click", () => {
             modalTitle.textContent = "Add New Game";
             gameForm.reset();
             document.getElementById("gameId").value = "";
             originalGameObj = null;
             if (deleteBtn) deleteBtn.style.display = "none"; // ซ่อนปุ่มลบเมื่อเป็นการเพิ่มเกมใหม่
             modal.style.display = "flex";
-        };
+        });
     }
 
-    if (closeModalBtn) closeModalBtn.onclick = () => modal.style.display = "none";
+    // ปิด Pop-up เมื่อกดปุ่ม × หรือคลิกพื้นหลัง
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener("click", () => modal.style.display = "none");
+    }
+
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+    });
 
     // จัดการเมื่อกดปุ่ม ลบเกม ใน Modal
     if (deleteBtn) {
-        deleteBtn.onclick = async () => {
+        deleteBtn.addEventListener("click", async () => {
             const id = document.getElementById("gameId").value;
             if (id) {
-                deleteGame(id);
+                await deleteGame(id);
+                modal.style.display = "none";
             }
-        };
+        });
     }
 
     // Submit Form (ทั้ง Add และ Edit)
@@ -85,11 +94,19 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
 
             const id = document.getElementById("gameId").value;
+            const tokenInput = document.getElementById("githubToken");
+            const token = tokenInput ? tokenInput.value.trim() : "";
             const title = document.getElementById("gameTitle").value.trim();
             const actionUrl = document.getElementById("gameUrl").value.trim();
 
+            // ตรวจสอบ Token
+            if (!token) {
+                alert("กรุณากรอก GitHub Token");
+                return;
+            }
+
             // ตรวจจับกรณีแก้ไข แต่ข้อมูลไม่ได้เปลี่ยน
-            if (id && originalGameObj) {
+            if (id && typeof originalGameObj !== "undefined" && originalGameObj) {
                 if (originalGameObj.title === title && originalGameObj.actionUrl === actionUrl) {
                     alert("ไม่มีการเปลี่ยนแปลงข้อมูล");
                     modal.style.display = "none";
@@ -97,62 +114,97 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            const submitBtn = document.getElementById("submitBtn");
-            submitBtn.textContent = "Saving...";
-            submitBtn.disabled = true;
-
-            if (id) {
-                // กรณี Edit
-                const index = currentGamesData.findIndex(g => g.id == id);
-                if (index !== -1) {
-                    currentGamesData[index].title = title;
-                    currentGamesData[index].actionUrl = actionUrl;
-                    currentGamesData[index].updatedAt = new Date().toLocaleString('th-TH');
-                }
-            } else {
-                // กรณี Add New
-                const newGame = {
-                    id: Date.now(),
-                    title: title,
-                    actionText: "Install",
-                    actionUrl: actionUrl,
-                    createdAt: new Date().toLocaleString('th-TH')
-                };
-                currentGamesData.push(newGame);
+            // ปรับสถานะปุ่มขณะกำลังบันทึก
+            if (submitBtn) {
+                submitBtn.textContent = "Saving...";
+                submitBtn.disabled = true;
             }
 
-            // บันทึกลง GitHub
-            await updateGitHubJSON(currentGamesData, id ? `Edit game: ${title}` : `Add game: ${title}`);
+            try {
+                if (id) {
+                    // กรณี Edit
+                    const index = currentGamesData.findIndex(g => g.id == id);
+                    if (index !== -1) {
+                        currentGamesData[index].title = title;
+                        currentGamesData[index].actionUrl = actionUrl;
+                        currentGamesData[index].updatedAt = new Date().toLocaleString('th-TH');
+                    }
+                } else {
+                    // กรณี Add New
+                    const newGame = {
+                        id: Date.now(),
+                        title: title,
+                        actionText: "Install",
+                        actionUrl: actionUrl,
+                        createdAt: new Date().toLocaleString('th-TH')
+                    };
+                    currentGamesData.push(newGame);
+                }
+
+                // บันทึกลง GitHub โดยส่ง Token และ Commit Message เข้าไปด้วย
+                const commitMsg = id ? `Edit game: ${title}` : `Add game: ${title}`;
+                await updateGitHubJSON(currentGamesData, commitMsg, token);
+
+                // ปิด Modal และรีเซ็ตฟอร์ม
+                modal.style.display = "none";
+                gameForm.reset();
+                renderGames(currentGamesData);
+
+            } catch (error) {
+                console.error(error);
+                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาเช็ก Token อีกครั้ง");
+            } finally {
+                // คืนค่าปุ่มกดเป็นปกติ
+                if (submitBtn) {
+                    submitBtn.textContent = "Save Game";
+                    submitBtn.disabled = false;
+                }
+            }
         });
     }
 
-    // ---------- 6. SEARCH real-time ----------
+    // ---------- 6. REAL-TIME SEARCH (DEBOUNCE) ----------
     const searchInput = document.getElementById("searchInput");
-        let typingTimer;
-        const doneTypingInterval = 500; // ตั้งเวลารอ 0.5 วินาที (500 ms)
+    let typingTimer;
+    const doneTypingInterval = 500; // ตั้งเวลารอ 0.5 วินาที (500 ms)
 
-        if (searchInput) {
-            searchInput.addEventListener("input", (e) => {
-                // 1. ยกเลิกการนับเวลาครั้งก่อนหน้าทุกครั้งที่มีการพิมพ์เพิ่ม
-                clearTimeout(typingTimer);
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            clearTimeout(typingTimer);
+            const keyword = e.target.value.toLowerCase().trim();
 
-                const keyword = e.target.value.toLowerCase().trim();
+            if (keyword === "") {
+                renderGames(currentGamesData);
+                return;
+            }
 
-                // 2. ถ้้าผู้ใช้ลบข้อความจนว่างเปล่า ให้แสดงเกมทั้งหมดทันทีโดยไม่ต้องรอ 0.5 วินาที
-                if (keyword === "") {
-                    renderGames(currentGamesData);
-                    return;
-                }
+            typingTimer = setTimeout(() => {
+                const filteredGames = currentGamesData.filter(game =>
+                    game.title.toLowerCase().includes(keyword)
+                );
+                renderGames(filteredGames);
+            }, doneTypingInterval);
+        });
+    }
 
-                // 3. เริ่มนับเวลาใหม่ เมื่อหยุดพิมพ์ครบ 0.5 วินาที ค่อยกรองผลลัพธ์มาแสดง
-                typingTimer = setTimeout(() => {
-                    const filteredGames = currentGamesData.filter(game =>
-                        game.title.toLowerCase().includes(keyword)
-                    );
-                    renderGames(filteredGames);
-                }, doneTypingInterval);
-            });
-        }
+    // ---------- 7. DELETE GAME ----------
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+            const id = document.getElementById("gameId").value;
+            const tokenInput = document.getElementById("githubToken");
+            const token = tokenInput ? tokenInput.value.trim() : "";
+
+            if (!token) {
+                alert("กรุณากรอก GitHub Token ก่อนทำการลบ");
+                return;
+            }
+
+            if (id) {
+                await deleteGame(id, token);
+                modal.style.display = "none";
+            }
+        });
+    }
 });
 
 // ==========================================
@@ -256,33 +308,45 @@ function openEditModal(id) {
     document.getElementById("gameModal").style.display = "flex";
 }
 
-// ฟังก์ชันสำหรับลบเกม
-async function deleteGame(id) {
+// ฟังก์ชันลบเกม (รับ token เพิ่มเติม)
+async function deleteGame(id, token) {
     const game = currentGamesData.find(g => g.id == id);
     if (!game) return;
 
     if (confirm(`คุณต้องการลบเกม "${game.title}" ใช่หรือไม่?`)) {
         currentGamesData = currentGamesData.filter(g => g.id != id);
-        await updateGitHubJSON(currentGamesData, `Delete game: ${game.title}`);
+        await updateGitHubJSON(currentGamesData, `Delete game: ${game.title}`, token);
     }
 }
 
-// ส่งอัปเดตไฟล์กลับไปที่ GitHub API
-async function updateGitHubJSON(updatedData, commitMessage) {
+// อัปเดตไฟล์กลับไปที่ GitHub API โดยรับ token มาจาก Parameter
+async function updateGitHubJSON(updatedData, commitMessage, token) {
+    // ใช้ token ที่ส่งมาจากฟอร์ม ถ้าไม่มีให้ดึงจากตัวแปร global
+    const authToken = token || GITHUB_TOKEN;
+
+    if (!authToken) {
+        alert("กรุณากรอก GitHub Token ก่อนทำรายการ");
+        throw new Error("Missing GitHub Token");
+    }
+
     const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
 
     try {
         const getRes = await fetch(url, {
-            headers: { "Authorization": `Bearer ${GITHUB_TOKEN}` }
+            headers: { "Authorization": `Bearer ${authToken}` }
         });
-        const fileData = await getRes.json();
 
+        if (!getRes.ok) {
+            throw new Error("ไม่สามารถอ่านข้อมูลจาก GitHub ได้ เช็ก Token หรือ Repo อีกครั้ง");
+        }
+
+        const fileData = await getRes.json();
         const updatedContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(updatedData, null, 2))));
 
         const putRes = await fetch(url, {
             method: "PUT",
             headers: {
-                "Authorization": `Bearer ${GITHUB_TOKEN}`,
+                "Authorization": `Bearer ${authToken}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -296,10 +360,12 @@ async function updateGitHubJSON(updatedData, commitMessage) {
             alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
             location.reload();
         } else {
-            alert("เกิดข้อผิดพลาดในการอัปเดตไฟล์");
+            const errorData = await putRes.json();
+            alert(`เกิดข้อผิดพลาด: ${errorData.message || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
         }
     } catch (err) {
         console.error("Error updating GitHub:", err);
+        throw err;
     }
 }
 

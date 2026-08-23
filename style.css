@@ -197,6 +197,12 @@ body {
     margin-bottom: 24px;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;                      /* เว้นระยะห่างระหว่างช่องค้นหากับปุ่ม + */
+}
+
 .library-container input[type="text"] {
     padding: 6px 14px;
     font-size: 14px;
@@ -225,7 +231,7 @@ body {
 }
 
 .add-game-btn {
-    padding: 6px 14px;
+    padding: 6px 11px;
     font-size: 14px;
     font-weight: 600;
     color: #111;
@@ -247,12 +253,19 @@ body {
    ========================================== */
 .game-item {
     display: flex;
+    overflow: visible !important;
     align-items: center;
     background-color: #18181c;
     border-radius: 10px;
     padding: 16px 20px;
     margin-bottom: 10px;
     position: relative;
+    z-index: 1; /* กำหนดลำดับชั้นเริ่มต้น */
+}
+
+.game-item:has(.action-menu.active),
+.game-item:hover {
+    z-index: 100; /* ดันการ์ดใบที่เปิดเมนู ให้ลอยเหนือการ์ดใบอื่นๆ ทั้งหมด */
 }
 
 .game-info {
@@ -329,7 +342,7 @@ body {
     border: 1px solid #333;
     border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    z-index: 10;
+    z-index: 999;
 }
 
 .action-menu.active {
@@ -393,6 +406,13 @@ body {
 }
 
 #gameForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.form-group {
     display: flex;
     flex-direction: column;
     gap: 12px;

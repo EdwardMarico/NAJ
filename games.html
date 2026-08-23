@@ -35,8 +35,11 @@
         <!-- กล่องส่วนหัวของ Library -->
         <div class="library-header">
             <h1 class="library-title">Library</h1>
-            <input type="text" id="searchInput" placeholder="Search games...">
-            <!-- <button id="addGameBtn" class="add-game-btn">Add Game</button> -->
+
+            <div class="header-actions">
+                <input type="text" id="searchInput" placeholder="Search games...">
+                <button id="addGameBtn" class="add-game-btn">+</button>
+            </div>
         </div>
 
         <div class="game-list" id="gameList"></div>
@@ -51,10 +54,16 @@
                 <!-- เก็บ ID ของเกมเวลากดแก้ไข -->
                 <input type="hidden" id="gameId">
                 
-                <label>Game Title:</label>
+                <!-- เพิ่มช่องใส่ Token เป็นช่องแรก -->
+                <div class="form-group" id="tokenGroup">
+                    <label for="githubToken">GitHub Access Token:</label>
+                    <input type="password" id="githubToken" placeholder="github_pat_..." required>
+                </div>
+
+                <label for="gameTitle">Game Title:</label>
                 <input type="text" id="gameTitle" placeholder="เช่น Hogwarts Legacy" required>
                 
-                <label>Action Link (URL):</label>
+                <label for="gameUrl">Action Link (URL):</label>
                 <input type="url" id="gameUrl" placeholder="https://example.com/install" required>
                 
                 <button type="submit" id="submitBtn" class="submit-btn">Save Game</button>
