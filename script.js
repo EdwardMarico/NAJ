@@ -125,6 +125,34 @@ document.addEventListener("DOMContentLoaded", () => {
             await updateGitHubJSON(currentGamesData, id ? `Edit game: ${title}` : `Add game: ${title}`);
         });
     }
+
+    // ---------- 6. SEARCH real-time ----------
+    const searchInput = document.getElementById("searchInput");
+        let typingTimer;
+        const doneTypingInterval = 500; // ตั้งเวลารอ 0.5 วินาที (500 ms)
+
+        if (searchInput) {
+            searchInput.addEventListener("input", (e) => {
+                // 1. ยกเลิกการนับเวลาครั้งก่อนหน้าทุกครั้งที่มีการพิมพ์เพิ่ม
+                clearTimeout(typingTimer);
+
+                const keyword = e.target.value.toLowerCase().trim();
+
+                // 2. ถ้้าผู้ใช้ลบข้อความจนว่างเปล่า ให้แสดงเกมทั้งหมดทันทีโดยไม่ต้องรอ 0.5 วินาที
+                if (keyword === "") {
+                    renderGames(currentGamesData);
+                    return;
+                }
+
+                // 3. เริ่มนับเวลาใหม่ เมื่อหยุดพิมพ์ครบ 0.5 วินาที ค่อยกรองผลลัพธ์มาแสดง
+                typingTimer = setTimeout(() => {
+                    const filteredGames = currentGamesData.filter(game =>
+                        game.title.toLowerCase().includes(keyword)
+                    );
+                    renderGames(filteredGames);
+                }, doneTypingInterval);
+            });
+        }
 });
 
 // ==========================================
@@ -170,12 +198,16 @@ function renderGames(games) {
     if (!container) return;
     container.innerHTML = "";
 
+    // ถ้าค้นหาแล้วไม่พบเกมใดๆ
+    if (games.length === 0) {
+        container.innerHTML = `<div class="no-results">ไม่พบเกมที่ตรงกับการค้นหา</div>`;
+        return;
+    }
+
     games.forEach((game, index) => {
         const item = document.createElement("div");
         item.className = "game-item animate-in";
-        
-        // เว้นระยะเวลาเริ่มเล่น Animation ของแต่ละไอเท็มห่างกันรายการละ 0.08 วินาที
-        item.style.animationDelay = `${index * 0.08}s`;
+        item.style.animationDelay = `${index * 0.05}s`; // ปรับหน่วงเวลาให้กระชับขึ้นเวลาพิมพ์ค้นหา
 
         item.innerHTML = `
             <div class="game-info">
