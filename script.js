@@ -4,7 +4,7 @@
 const GITHUB_USERNAME = "EdwardMarico";
 const GITHUB_REPO = "NAJ";
 const GITHUB_FILE_PATH = "games.json"; 
-const GITHUB_TOKEN = ""; 
+const GITHUB_TOKEN = "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"; 
 
 let currentGamesData = [];
 let originalGameObj = null; // เก็บค่าเดิมไว้เปรียบเทียบ
