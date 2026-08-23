@@ -538,13 +538,20 @@ body {
 /* ==========================================
    ANIMATION FOR PAGE TRANSITIONS
    ========================================== */
-/* สถานะปกติของหน้าเว็บ */
+/* สถานะเริ่มต้นของ body ให้จางและย่อลงเล็กน้อยก่อน */
 body {
-    opacity: 1;
+    opacity: 0;
+    transform: scale(0.98);
     transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
 }
 
-/* สถานะเมื่อกดเปลี่ยนหน้า (จางลง + ย่อลงเล็กน้อย) */
+/* คลาสที่จะใส่เพิ่มเข้ามาหลังจากหน้าเว็บโหลดเสร็จแล้ว */
+body.fade-in {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* คลาสเมื่อกดเปลี่ยนหน้า (ออก) */
 body.fade-out {
     opacity: 0;
     transform: scale(0.98);

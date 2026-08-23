@@ -307,8 +307,17 @@ async function updateGitHubJSON(updatedData, commitMessage) {
 // 2. ANIMATION FOR PAGE TRANSITIONS
 // ==========================================
 
+// เมื่อโหลดหน้าเว็บเสร็จ ให้ค่อยๆ จางเข้ามา (Fade In)
+document.addEventListener("DOMContentLoaded", () => {
+    // ใช้ requestAnimationFrame หรือ setTimeout เพื่อให้ CSS ทันจับ transition
+    requestAnimationFrame(() => {
+        document.body.classList.add("fade-in");
+    });
+});
+
 // ฟังก์ชันสำหรับเปลี่ยนหน้าแบบมี Transition Animation
 function navigateTo(url) {
+    document.body.classList.remove("fade-in");
     document.body.classList.add("fade-out");
     setTimeout(() => {
         window.location.href = url;
