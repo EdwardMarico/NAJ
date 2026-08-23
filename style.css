@@ -251,6 +251,23 @@ body {
     color: #ffffff;
 }
 
+/* ---------- Animation ---------- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-item.animate-in {
+    opacity: 0; /* ซ่อนไว้ก่อนเพื่อให้ Animation เริ่มทำงาน */
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+
 /* ---------- 3-Dots Menu ---------- */
 .game-more-btn {
     background: transparent;
@@ -481,4 +498,19 @@ body {
     font-weight: 700;
     color: #111111;
     text-align: center;
+}
+
+/* ==========================================
+   ANIMATION FOR PAGE TRANSITIONS
+   ========================================== */
+/* สถานะปกติของหน้าเว็บ */
+body {
+    opacity: 1;
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+/* สถานะเมื่อกดเปลี่ยนหน้า (จางลง + ย่อลงเล็กน้อย) */
+body.fade-out {
+    opacity: 0;
+    transform: scale(0.98);
 }

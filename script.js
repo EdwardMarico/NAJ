@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// 6. FUNCTIONS (LOAD, RENDER, GITHUB API)
+// 1.2 FUNCTIONS (LOAD, RENDER, GITHUB API)
 // ==========================================
 
 // ดึงข้อมูลเกมมาแสดง
@@ -164,15 +164,19 @@ async function loadGames() {
     }
 }
 
-// แสดงผลรายการเกมใน UI
+// แสดงผลรายการเกมใน UI แบบนุ่มนวลทีละการ์ด (Staggered Animation)
 function renderGames(games) {
     const container = document.getElementById("gameList");
     if (!container) return;
     container.innerHTML = "";
 
-    games.forEach(game => {
+    games.forEach((game, index) => {
         const item = document.createElement("div");
-        item.className = "game-item";
+        item.className = "game-item animate-in";
+        
+        // เว้นระยะเวลาเริ่มเล่น Animation ของแต่ละไอเท็มห่างกันรายการละ 0.08 วินาที
+        item.style.animationDelay = `${index * 0.08}s`;
+
         item.innerHTML = `
             <div class="game-info">
                 <h3 class="game-title">${game.title}</h3>
@@ -266,3 +270,36 @@ async function updateGitHubJSON(updatedData, commitMessage) {
         console.error("Error updating GitHub:", err);
     }
 }
+
+// ==========================================
+// 2. ANIMATION FOR PAGE TRANSITIONS
+// ==========================================
+
+// ฟังก์ชันสำหรับเปลี่ยนหน้าแบบมี Transition Animation
+function navigateTo(url) {
+    document.body.classList.add("fade-out");
+    setTimeout(() => {
+        window.location.href = url;
+    }, 400); // รอ 0.4 วินาทีให้ Animation เล่นจบ
+}
+
+// ตรวจจับการคลิกทั้งหน้าเว็บ (ครอบคลุมทั้ง <a> และ <button> ใน menu-card)
+document.addEventListener("click", (e) => {
+    // 1. กรณีเป็นแท็ก <a>
+    const link = e.target.closest("a");
+    if (link && link.hostname === window.location.hostname && link.target !== "_blank") {
+        // เช็กว่าไม่ใช่ลิงก์ที่เป็น # หรือ javascript:void(0)
+        if (link.getAttribute("href") && !link.getAttribute("href").startsWith("#")) {
+            e.preventDefault();
+            navigateTo(link.href);
+            return;
+        }
+    }
+
+    // 2. กรณีเป็นปุ่มใน menu-card ที่มี attribute data-href="URL"
+    const menuBtn = e.target.closest(".menu-card button[data-href]");
+    if (menuBtn) {
+        e.preventDefault();
+        navigateTo(menuBtn.dataset.href);
+    }
+});
