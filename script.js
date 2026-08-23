@@ -137,7 +137,7 @@ async function loadGames() {
 
     try {
         const res = await fetch(url, {
-            headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+            headers: { "Authorization": `Bearer ${GITHUB_TOKEN}` }
         });
 
         if (res.ok) {
@@ -237,7 +237,7 @@ async function updateGitHubJSON(updatedData, commitMessage) {
 
     try {
         const getRes = await fetch(url, {
-            headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+            headers: { "Authorization": `Bearer ${GITHUB_TOKEN}` }
         });
         const fileData = await getRes.json();
 
@@ -246,7 +246,7 @@ async function updateGitHubJSON(updatedData, commitMessage) {
         const putRes = await fetch(url, {
             method: "PUT",
             headers: {
-                "Authorization": `token ${GITHUB_TOKEN}`,
+                "Authorization": `Bearer ${GITHUB_TOKEN}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
