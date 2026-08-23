@@ -53,42 +53,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModalBtn = document.querySelector(".close-btn");
     const gameForm = document.getElementById("gameForm");
     const modalTitle = document.getElementById("modalTitle");
-    const deleteBtn = document.getElementById("deleteBtn");
     const submitBtn = document.getElementById("submitBtn");
 
     // เปิด Pop-up Add Game
     if (openModalBtn) {
         openModalBtn.addEventListener("click", () => {
-            modalTitle.textContent = "Add New Game";
-            gameForm.reset();
-            document.getElementById("gameId").value = "";
+            if (modalTitle) modalTitle.textContent = "Add New Game";
+            
+            // เคลียร์ค่าเฉพาะช่องข้อความ (เว้นช่อง Token ไว้ให้เบราว์เซอร์จำค่าเดิมได้)
+            const gameIdInput = document.getElementById("gameId");
+            const titleInput = document.getElementById("gameTitle");
+            const urlInput = document.getElementById("gameUrl");
+            
+            if (gameIdInput) gameIdInput.value = "";
+            if (titleInput) titleInput.value = "";
+            if (urlInput) urlInput.value = "";
+            
             originalGameObj = null;
-            if (deleteBtn) deleteBtn.style.display = "none"; // ซ่อนปุ่มลบเมื่อเป็นการเพิ่มเกมใหม่
-            modal.style.display = "flex";
+            if (modal) modal.style.display = "flex";
         });
     }
 
     // ปิด Pop-up เมื่อกดปุ่ม × หรือคลิกพื้นหลัง
     if (closeModalBtn) {
-        closeModalBtn.addEventListener("click", () => modal.style.display = "none");
+        closeModalBtn.addEventListener("click", () => {
+            if (modal) modal.style.display = "none";
+        });
     }
 
     window.addEventListener("click", (e) => {
         if (e.target === modal) modal.style.display = "none";
+        const deleteModal = document.getElementById("deleteModal");
+        if (e.target === deleteModal) deleteModal.style.display = "none";
     });
 
-    // จัดการเมื่อกดปุ่ม ลบเกม ใน Modal
-    if (deleteBtn) {
-        deleteBtn.addEventListener("click", async () => {
-            const id = document.getElementById("gameId").value;
-            if (id) {
-                await deleteGame(id);
-                modal.style.display = "none";
-            }
-        });
-    }
-
-    // Submit Form (ทั้ง Add และ Edit)
+    // Submit Form (Add & Edit)
     if (gameForm) {
         gameForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -99,22 +98,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const title = document.getElementById("gameTitle").value.trim();
             const actionUrl = document.getElementById("gameUrl").value.trim();
 
-            // ตรวจสอบ Token
             if (!token) {
                 alert("กรุณากรอก GitHub Token");
                 return;
             }
 
-            // ตรวจจับกรณีแก้ไข แต่ข้อมูลไม่ได้เปลี่ยน
             if (id && typeof originalGameObj !== "undefined" && originalGameObj) {
                 if (originalGameObj.title === title && originalGameObj.actionUrl === actionUrl) {
                     alert("ไม่มีการเปลี่ยนแปลงข้อมูล");
-                    modal.style.display = "none";
+                    if (modal) modal.style.display = "none";
                     return;
                 }
             }
 
-            // ปรับสถานะปุ่มขณะกำลังบันทึก
             if (submitBtn) {
                 submitBtn.textContent = "Saving...";
                 submitBtn.disabled = true;
@@ -122,7 +118,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 if (id) {
-                    // กรณี Edit
                     const index = currentGamesData.findIndex(g => g.id == id);
                     if (index !== -1) {
                         currentGamesData[index].title = title;
@@ -130,7 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         currentGamesData[index].updatedAt = new Date().toLocaleString('th-TH');
                     }
                 } else {
-                    // กรณี Add New
                     const newGame = {
                         id: Date.now(),
                         title: title,
@@ -141,20 +135,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     currentGamesData.push(newGame);
                 }
 
-                // บันทึกลง GitHub โดยส่ง Token และ Commit Message เข้าไปด้วย
                 const commitMsg = id ? `Edit game: ${title}` : `Add game: ${title}`;
                 await updateGitHubJSON(currentGamesData, commitMsg, token);
 
-                // ปิด Modal และรีเซ็ตฟอร์ม
-                modal.style.display = "none";
-                gameForm.reset();
-                renderGames(currentGamesData);
+                if (modal) modal.style.display = "none";
+                
+                // เคลียร์เฉพาะช่องข้อมูลเกม (ไม่รีเซ็ตช่อง Token เพื่อให้ปุ่มดวงตา/การจำรหัสยังอยู่)
+                document.getElementById("gameTitle").value = "";
+                document.getElementById("gameUrl").value = "";
+                document.getElementById("gameId").value = "";
 
             } catch (error) {
                 console.error(error);
                 alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาเช็ก Token อีกครั้ง");
             } finally {
-                // คืนค่าปุ่มกดเป็นปกติ
                 if (submitBtn) {
                     submitBtn.textContent = "Save Game";
                     submitBtn.disabled = false;
@@ -163,10 +157,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- 6. REAL-TIME SEARCH (DEBOUNCE) ----------
+    // ---------- 6. REAL-TIME SEARCH ----------
     const searchInput = document.getElementById("searchInput");
     let typingTimer;
-    const doneTypingInterval = 500; // ตั้งเวลารอ 0.5 วินาที (500 ms)
+    const doneTypingInterval = 500;
 
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
@@ -187,28 +181,52 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- 7. DELETE GAME ----------
-    if (deleteBtn) {
-        deleteBtn.addEventListener("click", async () => {
-            const id = document.getElementById("gameId").value;
-            const tokenInput = document.getElementById("githubToken");
-            const token = tokenInput ? tokenInput.value.trim() : "";
+    // ---------- 7. DELETE GAME FORM EVENTS ----------
+    const deleteModal = document.getElementById("deleteModal");
+    const closeDeleteModal = document.getElementById("closeDeleteModal");
+    const deleteForm = document.getElementById("deleteForm");
+
+    if (closeDeleteModal) {
+        closeDeleteModal.onclick = () => {
+            if (deleteModal) deleteModal.style.display = "none";
+        };
+    }
+
+    if (deleteForm) {
+        deleteForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById("deleteGameId").value;
+            const token = document.getElementById("deleteGithubToken").value.trim();
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
             if (!token) {
-                alert("กรุณากรอก GitHub Token ก่อนทำการลบ");
+                alert("กรุณากรอก GitHub Token");
                 return;
             }
 
-            if (id) {
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.textContent = "Deleting...";
+                confirmDeleteBtn.disabled = true;
+            }
+
+            try {
                 await deleteGame(id, token);
-                modal.style.display = "none";
+                if (deleteModal) deleteModal.style.display = "none";
+            } catch (err) {
+                console.error(err);
+            } finally {
+                if (confirmDeleteBtn) {
+                    confirmDeleteBtn.textContent = "Delete Game";
+                    confirmDeleteBtn.disabled = false;
+                }
             }
         });
     }
 });
 
 // ==========================================
-// 1.2 FUNCTIONS (LOAD, RENDER, GITHUB API)
+// FUNCTIONS (LOAD, RENDER, MODAL & GITHUB API)
 // ==========================================
 
 // ดึงข้อมูลเกมมาแสดง
@@ -216,9 +234,12 @@ async function loadGames() {
     const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
 
     try {
-        const res = await fetch(url, {
-            headers: { "Authorization": `token ${GITHUB_TOKEN}` }
-        });
+        const headers = {};
+        if (GITHUB_TOKEN) {
+            headers["Authorization"] = `token ${GITHUB_TOKEN}`;
+        }
+
+        const res = await fetch(url, { headers });
 
         if (res.ok) {
             const fileData = await res.json();
@@ -244,13 +265,12 @@ async function loadGames() {
     }
 }
 
-// แสดงผลรายการเกมใน UI แบบนุ่มนวลทีละการ์ด (Staggered Animation)
+// แสดงผลรายการเกมใน UI
 function renderGames(games) {
     const container = document.getElementById("gameList");
     if (!container) return;
     container.innerHTML = "";
 
-    // ถ้าค้นหาแล้วไม่พบเกมใดๆ
     if (games.length === 0) {
         container.innerHTML = `<div class="no-results">ไม่พบเกมที่ตรงกับการค้นหา</div>`;
         return;
@@ -259,7 +279,7 @@ function renderGames(games) {
     games.forEach((game, index) => {
         const item = document.createElement("div");
         item.className = "game-item animate-in";
-        item.style.animationDelay = `${index * 0.05}s`; // ปรับหน่วงเวลาให้กระชับขึ้นเวลาพิมพ์ค้นหา
+        item.style.animationDelay = `${index * 0.05}s`;
 
         item.innerHTML = `
             <div class="game-info">
@@ -270,11 +290,32 @@ function renderGames(games) {
             <button class="game-more-btn" onclick="toggleMenu(event, ${game.id})">&#8226;&#8226;&#8226;</button>
             <div class="action-menu" id="menu-${game.id}">
                 <button onclick="openEditModal(${game.id})">Edit Game Info</button>
-                <button onclick="deleteGame(${game.id})" style="color: #ef4444;">Delete Game</button>
+                <button onclick="openDeleteModal(${game.id})" style="color: #ef4444;">Delete Game</button>
             </div>
         `;
         container.appendChild(item);
     });
+}
+
+// เปิด Pop-up แก้ไขข้อมูลเกม
+function openEditModal(id) {
+    const game = currentGamesData.find(g => g.id == id);
+    if (!game) return;
+
+    originalGameObj = { ...game };
+
+    const modal = document.getElementById("gameModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const gameIdInput = document.getElementById("gameId");
+    const titleInput = document.getElementById("gameTitle");
+    const urlInput = document.getElementById("gameUrl");
+
+    if (modalTitle) modalTitle.textContent = "Edit Game Info";
+    if (gameIdInput) gameIdInput.value = game.id;
+    if (titleInput) titleInput.value = game.title;
+    if (urlInput) urlInput.value = game.actionUrl;
+
+    if (modal) modal.style.display = "flex";
 }
 
 // เปิด/ปิด เมนูปุ่มสามจุด
@@ -290,38 +331,34 @@ document.addEventListener('click', () => {
     document.querySelectorAll('.action-menu').forEach(m => m.classList.remove('active'));
 });
 
-// เปิด Pop-up โหมด Edit
-function openEditModal(id) {
-    const game = currentGamesData.find(g => g.id == id);
-    if (!game) return;
+// ฟังก์ชันเปิด Pop-up ลบเกม
+function openDeleteModal(id) {
+    const deleteModal = document.getElementById("deleteModal");
+    const deleteGameIdInput = document.getElementById("deleteGameId");
+    const deleteTokenInput = document.getElementById("deleteGithubToken");
 
-    originalGameObj = { ...game };
-
-    document.getElementById("modalTitle").textContent = "Edit Game Info";
-    document.getElementById("gameId").value = game.id;
-    document.getElementById("gameTitle").value = game.title;
-    document.getElementById("gameUrl").value = game.actionUrl;
-
-    const deleteBtn = document.getElementById("deleteBtn");
-    if (deleteBtn) deleteBtn.style.display = "block"; // แสดงปุ่มลบเมื่อเปิดการแก้ไข
-
-    document.getElementById("gameModal").style.display = "flex";
+    if (deleteModal && deleteGameIdInput) {
+        deleteGameIdInput.value = id;
+        deleteModal.style.display = "flex";
+        
+        // โฟกัสไปที่ช่องใส่ Token ทันทีเพื่อให้ปุ่มดวงตาของเบราว์เซอร์ปรากฏขึ้น
+        if (deleteTokenInput) {
+            deleteTokenInput.focus();
+        }
+    }
 }
 
-// ฟังก์ชันลบเกม (รับ token เพิ่มเติม)
+// ฟังก์ชันลบเกม
 async function deleteGame(id, token) {
     const game = currentGamesData.find(g => g.id == id);
     if (!game) return;
 
-    if (confirm(`คุณต้องการลบเกม "${game.title}" ใช่หรือไม่?`)) {
-        currentGamesData = currentGamesData.filter(g => g.id != id);
-        await updateGitHubJSON(currentGamesData, `Delete game: ${game.title}`, token);
-    }
+    currentGamesData = currentGamesData.filter(g => g.id != id);
+    await updateGitHubJSON(currentGamesData, `Delete game: ${game.title}`, token);
 }
 
-// อัปเดตไฟล์กลับไปที่ GitHub API โดยรับ token มาจาก Parameter
+// อัปเดตไฟล์กลับไปที่ GitHub API
 async function updateGitHubJSON(updatedData, commitMessage, token) {
-    // ใช้ token ที่ส่งมาจากฟอร์ม ถ้าไม่มีให้ดึงจากตัวแปร global
     const authToken = token || GITHUB_TOKEN;
 
     if (!authToken) {
@@ -337,6 +374,8 @@ async function updateGitHubJSON(updatedData, commitMessage, token) {
         });
 
         if (!getRes.ok) {
+            const errData = await getRes.json();
+            console.error("GitHub Fetch Error:", errData);
             throw new Error("ไม่สามารถอ่านข้อมูลจาก GitHub ได้ เช็ก Token หรือ Repo อีกครั้ง");
         }
 
@@ -370,32 +409,26 @@ async function updateGitHubJSON(updatedData, commitMessage, token) {
 }
 
 // ==========================================
-// 2. ANIMATION FOR PAGE TRANSITIONS
+// ANIMATION FOR PAGE TRANSITIONS
 // ==========================================
 
-// เมื่อโหลดหน้าเว็บเสร็จ ให้ค่อยๆ จางเข้ามา (Fade In)
 document.addEventListener("DOMContentLoaded", () => {
-    // ใช้ requestAnimationFrame หรือ setTimeout เพื่อให้ CSS ทันจับ transition
     requestAnimationFrame(() => {
         document.body.classList.add("fade-in");
     });
 });
 
-// ฟังก์ชันสำหรับเปลี่ยนหน้าแบบมี Transition Animation
 function navigateTo(url) {
     document.body.classList.remove("fade-in");
     document.body.classList.add("fade-out");
     setTimeout(() => {
         window.location.href = url;
-    }, 400); // รอ 0.4 วินาทีให้ Animation เล่นจบ
+    }, 400);
 }
 
-// ตรวจจับการคลิกทั้งหน้าเว็บ (ครอบคลุมทั้ง <a> และ <button> ใน menu-card)
 document.addEventListener("click", (e) => {
-    // 1. กรณีเป็นแท็ก <a>
     const link = e.target.closest("a");
     if (link && link.hostname === window.location.hostname && link.target !== "_blank") {
-        // เช็กว่าไม่ใช่ลิงก์ที่เป็น # หรือ javascript:void(0)
         if (link.getAttribute("href") && !link.getAttribute("href").startsWith("#")) {
             e.preventDefault();
             navigateTo(link.href);
@@ -403,10 +436,28 @@ document.addEventListener("click", (e) => {
         }
     }
 
-    // 2. กรณีเป็นปุ่มใน menu-card ที่มี attribute data-href="URL"
     const menuBtn = e.target.closest(".menu-card button[data-href]");
     if (menuBtn) {
         e.preventDefault();
         navigateTo(menuBtn.dataset.href);
     }
 });
+
+// ==========================================
+// PRESS & HOLD PASSWORD VISIBILITY
+// ==========================================
+function showPassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.type = "text";
+        btn.textContent = "Ø"; // เปลี่ยนเป็นสัญลักษณ์ขณะโชว์รหัส
+    }
+}
+
+function hidePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.type = "password";
+        btn.textContent = "O"; // กลับเป็นจุด/ซ่อนรหัส
+    }
+}

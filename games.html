@@ -57,7 +57,15 @@
                 <!-- เพิ่มช่องใส่ Token เป็นช่องแรก -->
                 <div class="form-group" id="tokenGroup">
                     <label for="githubToken">GitHub Access Token:</label>
-                    <input type="password" id="githubToken" placeholder="github_pat_..." required>
+                    <div class="password-group">
+                        <input type="password" id="githubToken" placeholder="github_pat_..." autocomplete="off" required>
+                        <button type="button" class="eye-btn"
+                                onmousedown="showPassword('githubToken', this)" 
+                                onmouseup="hidePassword('githubToken', this)"
+                                onmouseleave="hidePassword('githubToken', this)"
+                                ontouchstart="showPassword('githubToken', this)"
+                                ontouchend="hidePassword('githubToken', this)">O</button>
+                    </div>
                 </div>
 
                 <label for="gameTitle">Game Title:</label>
@@ -67,6 +75,31 @@
                 <input type="url" id="gameUrl" placeholder="https://example.com/install" required>
                 
                 <button type="submit" id="submitBtn" class="submit-btn">Save Game</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Pop-up -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeDeleteModal">&times;</span>
+            <h2 id="modalTitle">Enter GitHub Token</h2>
+            <form id="deleteForm">
+                <!-- ซ่อน ID ของเกมที่จะลบไว้ตรงนี้ -->
+                <input type="hidden" id="deleteGameId">
+                
+                <label for="deleteGithubToken">GitHub Access Token:</label>
+                <div class="password-group">
+                    <input type="password" id="deleteGithubToken" placeholder="github_pat_..." autocomplete="off" required>
+                    <button type="button" class="eye-btn"
+                            onmousedown="showPassword('deleteGithubToken', this)" 
+                            onmouseup="hidePassword('deleteGithubToken', this)"
+                            onmouseleave="hidePassword('deleteGithubToken', this)"
+                            ontouchstart="showPassword('deleteGithubToken', this)"
+                            ontouchend="hidePassword('deleteGithubToken', this)">O</button>
+                </div>
+
+                <button type="submit" id="confirmDeleteBtn" class="delete-btn">Delete Game</button>
             </form>
         </div>
     </div>

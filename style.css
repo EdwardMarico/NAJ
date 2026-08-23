@@ -444,6 +444,42 @@ body {
     background-color: #1d4ed8; 
 }
 
+#deleteForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+#deleteForm label {
+    padding: 4px;
+}
+
+#deleteForm input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background-color: #232328;
+    color: #fff;
+    font-size: 14px;
+}
+
+.delete-btn {
+    padding: 10px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background-color 0.2s;
+}
+
+.delete-btn:hover { 
+    background-color: #1d4ed8; 
+}
+
 /* ==========================================
    6. SETTINGS PAGE LAYOUT
    ========================================== */
@@ -575,4 +611,48 @@ body.fade-in {
 body.fade-out {
     opacity: 0;
     transform: scale(0.98);
+}
+
+/* ==========================================
+   CUSTOM PASSWORD VISIBILITY TOGGLE
+   ========================================== */
+/* 1. ซ่อนปุ่มดวงตาเดิมของเบราว์เซอร์ทุกตัว */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
+}
+
+/* 2. จัดโครงสร้างให้อยู่ในบรรทัดเดียวกัน (Flexbox) */
+.password-group {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* ระยะห่างระหว่างช่องกรอกกับปุ่ม */
+    width: 100%;
+}
+
+.password-group input {
+    flex: 1; /* ขยายช่องกรอกข้อความให้เต็มพื้นที่ที่เหลือ */
+}
+
+/* 3. ตกแต่งปุ่มดวงตาด้านข้าง */
+.eye-btn {
+    background-color: #232328;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 10px 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, border-color 0.2s;
+    height: 41px; /* ความสูงเท่ากับช่อง Input */
+    flex-shrink: 0;
+}
+
+.eye-btn:hover {
+    background-color: #333338;
+    border-color: #555;
 }
