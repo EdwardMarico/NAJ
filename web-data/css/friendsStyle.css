@@ -1,0 +1,178 @@
+/* ==========================================
+   FRIENDS PROFILE PAGE (CENTERED & SPACIOUS)
+   ========================================== */
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* จัดหน้าต่างหลักให้เต็มความสูงจอ และดึงการ์ดมาไว้ตรงกลางพอดี */
+.friend-profile-container {
+    width: 100%;
+    max-width: 1250px;
+    margin: 200px auto;
+    padding: 0px;
+    display: flex;
+    align-items: center;    /* จัดกึ่งกลางแนวตั้ง */
+    justify-content: center; /* จัดกึ่งกลางแนวนอน */
+}
+
+/* กล่องการ์ดหลักแบบแนวนอน (เพิ่มความสูงและพื้นที่ภายในให้โปร่งขึ้น) */
+.profile-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 35px;
+    background: #1e1e1e;
+    border-radius: 20px;
+    padding: 40px; /* เพิ่มพื้นที่รอบๆ ให้การ์ดดูใหญ่และสูงขึ้น */
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    border: 1px solid #2a2a2a;
+    width: 100%;
+}
+
+/* ฝั่งซ้าย: รูปภาพ 1:1 */
+.profile-left {
+    flex: 0 0 320px; /* ขยายขนาดรูปให้ใหญ่ขึ้นอีกนิด */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* จัดรูปให้อยู่กลางแนวตั้งของการ์ด */
+}
+
+.profile-avatar-frame {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #2a2a2a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.profile-avatar-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ฝั่งขวา: ข้อมูลทั้งหมด + แผนที่ */
+.profile-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* กระจายพื้นที่ให้ดูสมดุล */
+    gap: 20px;
+}
+
+.profile-name {
+    font-size: 34px; /* ขยายชื่อให้เด่นขึ้น */
+    font-weight: 700;
+    margin: 0;
+    color: #ffffff;
+    border-bottom: 2px solid #333333;
+    padding-bottom: 12px;
+}
+
+/* แถวข้อมูลและแผนที่ */
+.profile-content-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 25px;
+    align-items: stretch;
+    flex-grow: 1;
+}
+
+/* ตารางข้อมูลส่วนตัว */
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-content: center; /* ดึงข้อมูลให้อยู่กึ่งกลางแนวตั้งของกล่องฝั่งขวา */
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    background: #252525;
+    padding: 12px 16px; /* เพิ่มความสูงของช่องข้อมูลแต่ละอันให้ดูโปร่งขึ้น */
+    border-radius: 10px;
+    border: 1px solid #333333;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.info-item.full-width {
+    grid-column: span 2;
+}
+
+.info-item:hover {
+    transform: translateY(-10px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0px 20px 35px rgba(0, 0, 0, 0.3);
+}
+
+.info-label {
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span:not(.info-label), 
+.info-item a {
+    font-size: 15px;
+    color: #ffffff;
+    font-weight: 500;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.info-item a:hover {
+    color: #4da6ff;
+    text-decoration: underline;
+}
+
+/* ส่วนแสดงแผนที่ */
+.map-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.map-frame {
+    width: 100%;
+    height: 100%;
+    min-height: 260px; /* เพิ่มความสูงของแผนที่ให้ดูเต็มตาขึ้น */
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #333333;
+    background: #252525;
+}
+
+/* Responsive สำหรับมือถือ */
+@media (max-width: 900px) {
+    .friend-profile-container {
+        min-height: auto;
+        margin: 80px auto 30px auto;
+        align-items: flex-start;
+    }
+
+    .profile-card {
+        flex-direction: column;
+        padding: 25px;
+    }
+
+    .profile-left {
+        flex: unset;
+        width: 100%;
+        max-width: 260px;
+        margin: 0 auto;
+    }
+
+    .profile-content-row {
+        grid-template-columns: 1fr;
+    }
+}

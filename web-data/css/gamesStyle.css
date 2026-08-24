@@ -1,0 +1,209 @@
+/* ==========================================
+   1. LIBRARY PAGE LAYOUT
+   ========================================== */
+.library-container {
+    padding-top: 0px;
+    padding-bottom: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 840px) {
+    .library-container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+.library-header {
+    display: flex;
+    padding-top: 25px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.library-container input[type="text"] {
+    padding: 6px 14px;
+    font-size: 14px;
+    border-radius: 20px;
+    border: 1px solid #111;
+    background-color: transparent;
+    color: #111;
+}
+
+.library-container input[type="text"]::placeholder {
+    color: #aaa;
+    opacity: 1;
+}
+
+.library-container input[type="text"]:hover {
+    outline: none;
+    border: 2px solid #111;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.library-title {
+    color: #111;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.add-game-btn {
+    padding: 6px 11px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+    background: transparent;
+    border: 1px solid #111;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-game-btn:hover {
+    background-color: #111;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+   2. GAME LIST & ITEMS
+   ========================================== */
+.game-item {
+    display: flex;
+    overflow: visible !important;
+    align-items: center;
+    background-color: #18181c;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.game-item:has(.action-menu.active),
+.game-item:hover {
+    z-index: 100;
+}
+
+.game-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.game-title {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.game-action-btn {
+    color: #a0a0a0;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.game-action-btn:hover {
+    color: #ffffff;
+}
+
+.no-results {
+    text-align: center;
+    color: #888;
+    padding: 30px;
+    font-size: 14px;
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-item.animate-in {
+    opacity: 0;
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* 3-Dots Menu */
+.game-more-btn {
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.game-more-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-menu {
+    display: none;
+    position: absolute;
+    right: 20px;
+    top: 50px;
+    background-color: #232328;
+    border: 1px solid #333;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.action-menu.active {
+    display: block;
+}
+
+.action-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.action-menu button:hover {
+    background-color: #333338;
+}
+
+/* ==========================================
+   3. POPUP MODAL & FORM
+   ========================================== */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+#deleteForm label {
+    padding: 4px;
+}
