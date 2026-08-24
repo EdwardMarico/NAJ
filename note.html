@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kawin Profile</title>
+    <title>Games Library</title>
     <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
     <link rel="stylesheet" href="-style.css">
-    <link rel="stylesheet" href="web-data/css/friendsStyle.css">
+    <link rel="stylesheet" href="web-data/css/noteStyle.css">
 </head>
 <body>
     <header>
@@ -43,61 +43,92 @@
         </div>
     </header>
 
-    <main class="friend-profile-container">
-        <div class="profile-card" data-friend-id="Ann">
-            <!-- ฝั่งซ้าย: รูปภาพ 1:1 -->
-            <div class="profile-left">
-                <div class="profile-avatar-frame">
-                    <img id="friendAvatar" src="" alt="Avatar">
-                </div>
-            </div>
+    <main class="note-container">
+        <!-- กล่องส่วนหัวของ Library -->
+        <div class="note-header">
+            <h1 class="note-title">Notes</h1>
 
-            <!-- ฝั่งขวา: ข้อมูลทั้งหมด + แผนที่ -->
-            <div class="profile-right">
-                <h1 id="friendName" class="profile-name">Loading...</h1>
-                
-                <div class="profile-content-row">
-                    <div class="profile-info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Name:</span>
-                            <span id="friendFirstname">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Last Name:</span>
-                            <span id="friendLastname">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Birthdate:</span>
-                            <span id="friendBirthdate">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Phone Number:</span>
-                            <span id="friendPhone">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Latitude (Lat):</span>
-                            <span id="friendLat">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Longitude (Lng):</span>
-                            <span id="friendLng">-</span>
-                        </div>
-                        <div class="info-item full-width">
-                            <span class="info-label">Facebook:</span>
-                            <a id="friendFacebook" href="#" target="_blank">-</a>
-                        </div>
-                    </div>
-
-                    <div class="map-container">
-                        <span class="info-label">Location on Map:</span>
-                        <div class="map-frame">
-                            <iframe id="friendMap" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-                        </div>
-                    </div>
-                </div>
+            <div class="header-actions">
+                <input type="text" id="searchInput" placeholder="Search notes...">
+                <button id="addNoteBtn" class="add-note-btn">+</button>
             </div>
         </div>
+
+        <div class="note-list" id="noteList"></div>
     </main>
+
+    <!-- Modal Pop-up (ใช้ร่วมกันทั้ง Add และ Edit) -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modalTitle">Add New Note</h2>
+            <form id="noteForm">
+                <!-- เก็บ ID ของเกมเวลากดแก้ไข -->
+                <input type="hidden" id="noteId">
+
+                <label for="noteAuthor">Profile / Author:</label>
+                <div class="custom-select-wrapper">
+                    <input type="hidden" id="noteAuthor" value="Kawin">
+                    <div class="custom-select-trigger" id="customSelectTrigger">
+                        <span id="selectedAuthorText">Kawin</span>
+                        <span class="arrow-down">▾</span>
+                    </div>
+                    <div class="custom-options" id="customOptions">
+                        <div class="custom-option selected" data-value="Kawin">Kawin</div>
+                        <div class="custom-option" data-value="Thiraphat">Thiraphat</div>
+                        <div class="custom-option" data-value="Archawin">Archawin</div>
+                        <div class="custom-option" data-value="Guest">Guest</div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="tokenGroup">
+                    <label for="githubToken">GitHub Access Token:</label>
+                    <div class="password-group">
+                        <input type="password" id="githubToken" placeholder="github_pat_..." autocomplete="off" required>
+                        <button type="button" class="eye-btn"
+                                onmousedown="showPassword('githubToken', this)" 
+                                onmouseup="hidePassword('githubToken', this)"
+                                onmouseleave="hidePassword('githubToken', this)"
+                                ontouchstart="showPassword('githubToken', this)"
+                                ontouchend="hidePassword('githubToken', this)">O</button>
+                    </div>
+                </div>
+
+                <label for="noteTitle">Note Title:</label>
+                <input type="text" id="noteTitle" placeholder="เช่น How about today?" required>
+                
+                <label for="noteContent">Note Content:</label>
+                <textarea id="noteContent" placeholder="Enter your note here..." required></textarea>
+
+                <button type="submit" id="submitBtn" class="submit-btn">Save Note</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Pop-up -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeDeleteModal">&times;</span>
+            <h2 id="modalTitle">Enter GitHub Token</h2>
+            <form id="deleteForm">
+                <!-- ซ่อน ID ของเกมที่จะลบไว้ตรงนี้ -->
+                <input type="hidden" id="deleteGameId">
+                
+                <label for="deleteGithubToken">GitHub Access Token:</label>
+                <div class="password-group">
+                    <input type="password" id="deleteGithubToken" placeholder="github_pat_..." autocomplete="off" required>
+                    <button type="button" class="eye-btn"
+                            onmousedown="showPassword('deleteGithubToken', this)" 
+                            onmouseup="hidePassword('deleteGithubToken', this)"
+                            onmouseleave="hidePassword('deleteGithubToken', this)"
+                            ontouchstart="showPassword('deleteGithubToken', this)"
+                            ontouchend="hidePassword('deleteGithubToken', this)">O</button>
+                </div>
+
+                <button type="submit" id="confirmDeleteBtn" class="delete-btn">Delete Note</button>
+            </form>
+        </div>
+    </div>
 
     <!--------------------------------------->
     <!-- Get Token Pop-up                  -->
@@ -130,6 +161,7 @@
             <span class="close-btn" id="closeShowTokenModal">&times;</span>
             <h2>Your Token</h2>
             
+            <!-- เปลี่ยน path รูปภาพตรงนี้ -->
             <div class="image-container">
                 <img src="web-data/picture/BCD-API-2026.png" alt="Token Preview" style="max-width: 100%; height: auto;">
             </div>
@@ -189,6 +221,6 @@
     </footer>
 
     <script src="-script.js"></script>
-    <script src="web-data/js/friendsJS.js"></script>
+    <script src="web-data/js/noteJS.js"></script>
 </body>
 </html>
