@@ -1,0 +1,33 @@
+    const settingsData = [
+        {
+            category: "Appearance & Display",
+            items: [
+                { 
+                    id: "theme", 
+                    title: "Theme Mode", 
+                    desc: "เลือกธีมการแสดงผลของเว็บไซต์", 
+                    type: "select", 
+                    value: localStorage.getItem("app_theme") || "light",
+                    options: [{ value: "dark", label: "Dark Mode" }, { value: "light", label: "Light Mode" }] 
+                }
+            ]
+        },
+        {
+            category: "Account & Security",
+            items: [
+                { id: "tokenAccessBtn", title: "Get Access Token", desc: "จัดการและรับ Token สำหรับเข้าถึงสิทธิ์พิเศษ", type: "button", btnText: "Manage Token", action: "openTokenModal" }
+            ]
+        },
+        {
+            category: "Navigation & Dropdown",
+            items: [
+                { 
+                    id: "autoScrollTop", 
+                    title: "Auto Scroll to Top", 
+                    desc: "เลื่อนหน้าจอขึ้นบนสุดอัตโนมัติเมื่อเปิด Dropdown Menu", 
+                    type: "toggle", 
+                    checked: localStorage.getItem("setting_autoScrollTop") !== "false" 
+                }
+            ]
+        }
+    ];
