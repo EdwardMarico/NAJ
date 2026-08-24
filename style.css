@@ -1,5 +1,5 @@
 /* ==========================================
-   1. GLOBAL & RESET SETTINGS
+   GLOBAL & RESET SETTINGS
    ========================================== */
 :root {
     color-scheme: light;
@@ -17,6 +17,14 @@ html, body {
     min-height: 100vh;
     background-color: #f2f2f2 !important;
     color: #000 !important;
+
+    -ms-overflow-style: none;  /* สำหรับ IE / Edge รุ่นเก่า */
+    scrollbar-width: none;     /* สำหรับ Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;             /* สำหรับ Chrome, Safari, Opera, Edge */
 }
 
 body {
@@ -24,13 +32,20 @@ body {
     flex-direction: column;
 }
 
+body.no-scroll {
+    overflow: hidden !important;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
 /* ==========================================
-   2. TOPBAR & NAVIGATION
+   TOPBAR & NAVIGATION
    ========================================== */
 .topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 60px;
     background: #111;
@@ -39,7 +54,6 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    z-index: 1000;
 }
 
 .logo {
@@ -66,11 +80,14 @@ body {
     transition: all 0.2s;
 }
 
-/* ---------- Hamburger Icon ---------- */
+/* Hamburger Icon */
+#hamburgerMenu,
 .hamburger {
     display: flex;
     flex-direction: column;
     cursor: pointer;
+    position: relative;
+    z-index: 9999; /* ตั้งค่าสูงกว่า .menu-card (1001) เพื่อไม่ให้โดนทับ */
 }
 
 .hamburger .bar {
@@ -93,47 +110,62 @@ body {
     transform: translateY(-11px) rotate(-45deg);
 }
 
-/* ---------- Slide Menu (Topbar Right) ---------- */
+/* Menu Card Container */
 .menu-card {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 10px;
     padding: 0 10px;
-    
-    position: fixed;
+
+    position: absolute;
     top: 10px;
     right: 60px;
     height: 40px;
-    max-width: 50vw;
-    
+    width: max-content;
+    max-width: min(40vw, calc(100vw - 100px));
+    min-width: 0;
+
     background: transparent;
     color: #ffffff;
-    
+
+    /* การเลื่อนแนวนอน */
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
-    
-    transform-origin: right center;
-    transform: scaleX(0);
+
+    /* ปรับ Animation เปิด-ปิด ใหม่ (เลิกใช้ scaleX เพื่อไม่ให้ปุ่มข้างในเบี้ยวทับกัน) */
+    transform: translateX(15px);
     opacity: 0;
     visibility: hidden;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    pointer-events: none;
+
+    transition:
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+
     z-index: 1001;
-    
-    /* ซ่อน Scrollbar */
+
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
 
-.menu-card::-webkit-scrollbar {
-    display: none;
-}
-
+/* เมื่อเปิดเมนู */
 .menu-card.visible {
-    transform: scaleX(1);
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+/* ล็อคขนาดปุ่มทุกตัวในเมนู ไม่ให้โดนบีบย่นเมื่อพื้นที่แคบลง */
+.menu-card > * {
+    flex-shrink: 0;
+}
+
+.menu-card::-webkit-scrollbar {
+    display: none;
 }
 
 .menu-card h2 {
@@ -158,6 +190,101 @@ body {
     border-color: #ffffff;
 }
 
+/* Container ตัวแม่ของ Dropdown */
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0; /* ป้องกันไม่ให้ปุ่มโดนบีบ */
+}
+
+#friendsSubmenu {
+    display: flex; /* เปลี่ยนจาก display: none เป็น flex ไว้ก่อนเพื่อทำ Transition */
+    flex-direction: column;
+    box-sizing: border-box;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 8px 0;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.4);
+
+    /* --- Animation Settings --- */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transform-origin: top center;
+    transition: 
+        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0.4s ease;
+
+    /* ป้องกันการกดโดนขณะซ่อนอยู่ */
+    pointer-events: none; 
+}
+
+/* เมื่อสั่งเปิดเมนู (.show) */
+#friendsSubmenu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.submenu {
+    display: none;
+    position: absolute;
+
+    /* อยู่ใต้ปุ่ม */
+    top: calc(100% + 8px);
+    left: 0;
+
+    /* ความกว้างเท่ากับ Parent */
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    background: #1e1e1e;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid #333;
+
+    z-index: 99999;
+
+    flex-direction: column;
+    padding: 6px;
+    gap: 4px;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+
+.submenu button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.submenu button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.submenu.show {
+    display: flex !important;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
 #adminCmdBtn {
     border-color: rgba(239, 68, 68, 0.6);
     color: #f87171;
@@ -170,361 +297,23 @@ body {
 }
 
 /* ==========================================
-   3. LIBRARY PAGE LAYOUT
-   ========================================== */
-.library-container {
-    padding-top: 80px;
-    padding-bottom: 40px;
-    max-width: 800px;
-    margin: 0 auto;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* เมื่อความกว้างหน้าจอน้อยกว่าหรือเท่ากับ 840px */
-@media (max-width: 840px) {
-    .library-container {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-}
-
-.library-header {
-    display: flex;
-    padding-top: 25px;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;                      /* เว้นระยะห่างระหว่างช่องค้นหากับปุ่ม + */
-}
-
-.library-container input[type="text"] {
-    padding: 6px 14px;
-    font-size: 14px;
-    border-radius: 20px;
-    border: 1px solid #111;
-    background-color: transparent;
-    color: #111;
-}
-
-.library-container input[type="text"]::placeholder {
-    color: #aaa;
-    opacity: 1; /* Firefox */
-}
-
-.library-container input[type="text"]:hover {
-    outline: none;
-    border: 2px solid #111;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-
-.library-title {
-    color: #111;
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0;
-}
-
-.add-game-btn {
-    padding: 6px 11px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #111;
-    background: transparent;
-    border: 1px solid #111;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.add-game-btn:hover {
-    background-color: #111;
-    color: #fff;
-    transform: translateY(-2px);
-}
-
-/* ==========================================
-   4. GAME LIST & ITEMS
-   ========================================== */
-.game-item {
-    display: flex;
-    overflow: visible !important;
-    align-items: center;
-    background-color: #18181c;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 10px;
-    position: relative;
-    z-index: 1; /* กำหนดลำดับชั้นเริ่มต้น */
-}
-
-.game-item:has(.action-menu.active),
-.game-item:hover {
-    z-index: 100; /* ดันการ์ดใบที่เปิดเมนู ให้ลอยเหนือการ์ดใบอื่นๆ ทั้งหมด */
-}
-
-.game-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.game-title {
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 700;
-    margin: 0;
-}
-
-.game-action-btn {
-    color: #a0a0a0;
-    font-size: 13px;
-    text-decoration: none;
-}
-
-.game-action-btn:hover {
-    color: #ffffff;
-}
-
-.no-results {
-    text-align: center;
-    color: #888;
-    padding: 30px;
-    font-size: 14px;
-}
-
-/* ---------- Animation ---------- */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.game-item.animate-in {
-    opacity: 0; /* ซ่อนไว้ก่อนเพื่อให้ Animation เริ่มทำงาน */
-    animation: fadeInUp 0.4s ease-out forwards;
-}
-
-/* ---------- 3-Dots Menu ---------- */
-.game-more-btn {
-    background: transparent;
-    border: none;
-    color: #a0a0a0;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 4px;
-}
-
-.game-more-btn:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.action-menu {
-    display: none;
-    position: absolute;
-    right: 20px;
-    top: 50px;
-    background-color: #232328;
-    border: 1px solid #333;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    z-index: 999;
-}
-
-.action-menu.active {
-    display: block;
-}
-
-.action-menu button {
-    display: block;
-    width: 100%;
-    padding: 8px 16px;
-    background: none;
-    border: none;
-    color: #fff;
-    text-align: left;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.action-menu button:hover {
-    background-color: #333338;
-}
-
-/* ==========================================
-   5. POPUP MODAL & FORM
-   ========================================== */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0; 
-    left: 0;
-    width: 100%; 
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: #18181c;
-    color: #fff;
-    padding: 24px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-}
-
-.close-btn {
-    position: absolute;
-    top: 12px; 
-    right: 16px;
-    font-size: 24px;
-    color: #aaa;
-    cursor: pointer;
-}
-
-.close-btn:hover { 
-    color: #fff; 
-}
-
-#gameForm {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-#gameForm input {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #333;
-    background-color: #232328;
-    color: #fff;
-    font-size: 14px;
-}
-
-.submit-btn {
-    padding: 10px;
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: background-color 0.2s;
-}
-
-.submit-btn:hover { 
-    background-color: #1d4ed8; 
-}
-
-#deleteForm {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-#deleteForm label {
-    padding: 4px;
-}
-
-#deleteForm input {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #333;
-    background-color: #232328;
-    color: #fff;
-    font-size: 14px;
-}
-
-.delete-btn {
-    padding: 10px;
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: background-color 0.2s;
-}
-
-.delete-btn:hover { 
-    background-color: #1d4ed8; 
-}
-
-/* ==========================================
-   6. SETTINGS PAGE LAYOUT
-   ========================================== */
-.settings-container {
-    padding-top: 80px;
-    padding-bottom: 40px;
-    padding-left: 30%;
-    padding-right: 30%;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.settings-header {
-    display: flex;
-    padding-top: 25px;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-}
-
-.settings-title {
-    color: #111;
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0;
-}
-
-/* ==========================================
-   7. FRIENDS SECTION (HOME PAGE)
+   FRIENDS SECTION (HOME PAGE)
    ========================================== */
 .NAJ-container {
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 60px);
-    margin-top: 60px; /* หลบ Topbar */
-    padding: 40px 20px;
+    align-items: flex-start; /* ดันเนื้อหาขึ้นไปเริ่มที่ขอบบน */
+    min-height: auto;        /* ยกเลิกการบังคับความสูงเต็มจอ */
+    margin-top: 60px;        /* เว้นระยะหลบ Topbar 60px (หากต้องการให้ติด Topbar พอดี) */
+    padding: 20px 20px 40px 20px; /* ลด Padding ด้านบนเหลือ 20px */
     box-sizing: border-box;
 }
 
 .NAJ-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: center; /* จัดทุกอย่างให้อยู่ตรงกลางแนวนอน */
-    width: 100;
+    align-items: center;
+    width: 100%;
     max-width: 1200px;
 }
 
@@ -533,14 +322,14 @@ body {
     font-weight: 800;
     color: #111111;
     text-align: center;
-    margin: 0 0 50px 0; /* ระยะห่างด้านล่างก่อนถึงรูปเพื่อน */
+    margin: 0 0 50px 0;
 }
 
 .friends-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 50px; /* เพิ่มระยะห่างระหว่างการ์ด */
+    gap: 50px;
     flex-wrap: wrap;
     width: 100%;
     max-width: 1200px;
@@ -553,10 +342,9 @@ body {
     gap: 16px;
 }
 
-/* กรอบใหญ่ขยายไซส์ */
 .avatar-frame {
-    width: 300px;  /* ปรับขยายขนาดความกว้าง */
-    height: 500px; /* ปรับขยายขนาดความสูง */
+    width: 300px;
+    height: 500px;
     background-color: #18181c;
     border: 3px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
@@ -574,7 +362,6 @@ body {
     box-shadow: 0px 20px 35px rgba(0, 0, 0, 0.3);
 }
 
-/* รูปภาพภายในกรอบ */
 .avatar-frame img {
     width: 100%;
     height: 100%;
@@ -582,7 +369,6 @@ body {
     border-radius: 16px;
 }
 
-/* ตัวหนังสือชื่อใต้ภาพ */
 .friend-name {
     margin: 0;
     font-size: 24px;
@@ -594,48 +380,175 @@ body {
 /* ==========================================
    ANIMATION FOR PAGE TRANSITIONS
    ========================================== */
-/* สถานะเริ่มต้นของ body ให้จางและย่อลงเล็กน้อยก่อน */
 body {
     opacity: 0;
     transform: scale(0.98);
     transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
 }
 
-/* คลาสที่จะใส่เพิ่มเข้ามาหลังจากหน้าเว็บโหลดเสร็จแล้ว */
 body.fade-in {
     opacity: 1;
     transform: scale(1);
 }
 
-/* คลาสเมื่อกดเปลี่ยนหน้า (ออก) */
 body.fade-out {
     opacity: 0;
     transform: scale(0.98);
 }
 
 /* ==========================================
+   GLOBAL POPUP MODAL & ANIMATION
+   ========================================== */
+.modal {
+    display: none;
+    position: fixed;
+    
+    /* คลุมเต็มหน้าจอตั้งแต่ขอบบนสุด */
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
+    width: 100%;
+    height: 100dvh; 
+    
+    /* สีพื้นหลังแบบโปร่งแสง */
+    background-color: rgba(0, 0, 0, 0.5);
+    
+    /* ยิงเบลอ Overlay ทับทุกอย่างด้านหลัง (รวมถึง topbar) */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    /* ต้องตั้งให้สูงกว่า z-index ของ topbar เสมอ */
+    z-index: 9999; 
+    
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    
+    opacity: 0;
+    transition: opacity 0.25s ease-out;
+}
+
+.modal-content {
+    background-color: #18181c;
+    color: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    transform: scale(0.85);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#gameForm,
+#deleteForm,
+#getTokenForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+#doneTokenBtn {
+    width: 100%;
+    display: block;
+}
+
+.token-instruction {
+    /*font-size: 14px;*/
+    color: #a0a0a0;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="url"],
+.modal-content input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background-color: #232328;
+    color: #ffffff !important;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.submit-btn,
+.delete-btn,
+.primary-btn {
+    padding: 10px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover,
+.delete-btn:hover,
+.primary-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* Modal Open State */
+.modal.show {
+    display: flex;
+    opacity: 1;
+}
+
+.modal.show .modal-content {
+    transform: scale(1);
+}
+
+/* Modal Close State */
+.modal.closing {
+    opacity: 0;
+}
+
+.modal.closing .modal-content {
+    transform: scale(0.85);
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px; 
+    right: 16px;
+    font-size: 24px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close-btn:hover { 
+    color: #fff; 
+}
+
+/* ==========================================
    CUSTOM PASSWORD VISIBILITY TOGGLE
    ========================================== */
-/* 1. ซ่อนปุ่มดวงตาเดิมของเบราว์เซอร์ทุกตัว */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear,
 input[type="password"]::-webkit-credentials-auto-fill-button {
     display: none !important;
 }
 
-/* 2. จัดโครงสร้างให้อยู่ในบรรทัดเดียวกัน (Flexbox) */
 .password-group {
     display: flex;
     align-items: center;
-    gap: 8px; /* ระยะห่างระหว่างช่องกรอกกับปุ่ม */
+    gap: 8px;
     width: 100%;
 }
 
 .password-group input {
-    flex: 1; /* ขยายช่องกรอกข้อความให้เต็มพื้นที่ที่เหลือ */
+    flex: 1;
 }
 
-/* 3. ตกแต่งปุ่มดวงตาด้านข้าง */
 .eye-btn {
     background-color: #232328;
     border: 1px solid #333;
@@ -648,11 +561,130 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s, border-color 0.2s;
-    height: 41px; /* ความสูงเท่ากับช่อง Input */
+    height: 41px;
     flex-shrink: 0;
 }
 
 .eye-btn:hover {
     background-color: #333338;
     border-color: #555;
+}
+
+/* ==========================================
+   TRANSPARENT SITE FOOTER
+   ========================================== */
+.site-footer {
+    width: 100%;
+    background-color: transparent; /* ไม่มี BG */
+    padding: 40px 20px 20px 20px;
+    margin-top: auto; /* ดัน Footer ไปอยู่ล่างสุดเสมอ */
+    border-top: 1px solid rgba(0, 0, 0, 0.1); /* เส้นแบ่งบางๆ ให้ดูเป็นสัดส่วน */
+    box-sizing: border-box;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+/* ฝั่งซ้าย: Logo & Brand */
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 250px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #111;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.footer-logo img {
+    height: 30px; /* ขนาดโลโก้เล็กกำลังพอดี */
+    margin-right: 8px;
+}
+
+.footer-desc {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* ฝั่งขวา: Links & Credits Group */
+.footer-links-group {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-col h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.footer-col a {
+    text-decoration: none;
+    font-size: 13px;
+    color: #555;
+    transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+    color: #111;
+    text-decoration: underline;
+}
+
+.footer-col p {
+    margin: 0;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.footer-col .copyright {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #888;
+}
+
+/* Responsive สำหรับหน้าจอโทรศัพท์ */
+@media (max-width: 600px) {
+    .footer-container {
+        flex-direction: column;
+        gap: 24px;
+    }
+    
+    .footer-links-group {
+        width: 100%;
+        justify-content: space-between;
+        gap: 20px;
+    }
 }

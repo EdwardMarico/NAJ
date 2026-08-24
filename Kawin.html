@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings</title>
+    <title>Kawin Profile</title>
     <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="web-data/css/settingsStyle.css">
+    <link rel="stylesheet" href="web-data/css/friendsStyle.css">
 </head>
 <body>
     <header>
@@ -43,17 +43,60 @@
         </div>
     </header>
 
-    <main class="settings-container">
-        <!-- กล่องส่วนหัวของ Settings -->
-        <div class="settings-header">
-            <h1 class="settings-title">Settings</h1>
+    <main class="friend-profile-container">
+        <div class="profile-card" data-friend-id="Ann">
+            <!-- ฝั่งซ้าย: รูปภาพ 1:1 -->
+            <div class="profile-left">
+                <div class="profile-avatar-frame">
+                    <img id="friendAvatar" src="" alt="Avatar">
+                </div>
+            </div>
 
-            <div class="header-actions">
-                <input type="text" id="searchInput" placeholder="Search settings...">
+            <!-- ฝั่งขวา: ข้อมูลทั้งหมด + แผนที่ -->
+            <div class="profile-right">
+                <h1 id="friendName" class="profile-name">Loading...</h1>
+                
+                <div class="profile-content-row">
+                    <div class="profile-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">ชื่อจริง:</span>
+                            <span id="friendFirstname">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">นามสกุล:</span>
+                            <span id="friendLastname">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">วันเกิด:</span>
+                            <span id="friendBirthdate">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">เบอร์โทรศัพท์:</span>
+                            <span id="friendPhone">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">ละติจูด (Lat):</span>
+                            <span id="friendLat">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">ลองจิจูด (Lng):</span>
+                            <span id="friendLng">-</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Facebook:</span>
+                            <a id="friendFacebook" href="#" target="_blank">-</a>
+                        </div>
+                    </div>
+
+                    <div class="map-container">
+                        <span class="info-label">ตำแหน่งบนแผนที่:</span>
+                        <div class="map-frame">
+                            <iframe id="friendMap" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="settings-list" id="settingsList"></div>
     </main>
 
     <!--------------------------------------->
@@ -145,6 +188,6 @@
     </footer>
 
     <script src="script.js"></script>
-    <script src="web-data/js/settingsJS.js"></script>
+    <script src="web-data/js/friendsJS.js"></script>
 </body>
 </html>

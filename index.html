@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NAJ</title>
-    <link rel="icon" type="image/png" href="Logoicon1.png">
+    <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <div class="topbar">
             <a href="index.html" class="logo">
-                <img src="Logoicon1.png" alt="Logo">
+                <img src="web-data/picture/Logoicon1.png" alt="Logo">
                 <span id="logoText" class="logo-text">NAJ</span>
             </a>
             <div class="menu">
@@ -22,48 +22,146 @@
                 </div>
             </div>
         </div>
-    </header>
 
-    <main class="home">
         <div class="menu-card">
             <h2>Menu</h2>
             <button onclick="navigateTo('games.html')">Games Library</button>
-        <button onclick="navigateTo('index.html')">Credit Website</button>
+            <button id="openGetTokenBtn">Get Token</button>
+
+            <div class="dropdown-container">
+                <button id="dropdownToggleBtn">Friends Profile ▾</button>
+                <div class="submenu" id="friendsSubmenu">
+                    <button onclick="navigateTo('Kawin.html')">Kawin</button>
+                    <button onclick="navigateTo('Thiraphat.html')">Thiraphat</button>
+                    <button onclick="navigateTo('Archawin.html')">Archawin</button>
+                </div>
+            </div>
+
+            <button onclick="navigateTo('index.html')">Credit Website</button>
             <button onclick="navigateTo('settings.html')">Settings</button>
         </div>
-    </main>
+    </header>
 
     <main class="NAJ-container">
         <div class="NAJ-wrapper">
-            <h1 class="credits">Credits</h1>
+            <h1 class="credits">Credits Website</h1>
 
             <div class="friends-container">
-                <!-- เพื่อนคนที่ 1 -->
-                <div class="friend-card">
+                <!-- เพื่อนคนที่ 1: Kawin Pirompoh (ID: 1) -->
+                <a href="Kawin.html" class="friend-card" style="text-decoration: none; color: inherit;">
                     <div class="avatar-frame">
-                        <img src="Ann(on bg).png" alt="Friend 2">
+                        <img src="web-data/picture/Ann(on bg).png" alt="Kawin Pirompoh">
                     </div>
-                    <p class="friend-name">Kawin Pirompol</p>
-                </div>
+                    <p class="friend-name">Kawin Pirompoh</p>
+                </a>
 
-                <!-- เพื่อนคนที่ 2 -->
-                <div class="friend-card">
+                <!-- เพื่อนคนที่ 2: Thiraphat Yothi (ID: 2) -->
+                <a href="Thiraphat.html" class="friend-card" style="text-decoration: none; color: inherit;">
                     <div class="avatar-frame">
-                        <img src="Nuer.png" alt="Friend 1">
+                        <img src="web-data/picture/Nuer.png" alt="Thiraphat Yothi">
                     </div>
                     <p class="friend-name">Thiraphat Yothi</p>
-                </div>
+                </a>
 
-                <!-- เพื่อนคนที่ 3 -->
-                <div class="friend-card">
+                <!-- เพื่อนคนที่ 3: Archawin Jantasim (ID: 3) -->
+                <a href="Archawin.html" class="friend-card" style="text-decoration: none; color: inherit;">
                     <div class="avatar-frame">
-                        <img src="Jim.png" alt="Friend 3">
+                        <img src="web-data/picture/Jim.png" alt="Archawin Jantasim">
                     </div>
                     <p class="friend-name">Archawin Jantasim</p>
-                </div>
+                </a>
             </div>
         </div>
     </main>
+
+    <!--------------------------------------->
+    <!-- Get Token Pop-up                  -->
+    <!--------------------------------------->
+
+    <!-- Pop-up 1: Get Token -->
+    <div id="getTokenModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeGetTokenModal">&times;</span>
+            <h2>Enter Password</h2>
+            <form id="getTokenForm">
+                <label for="tokenPassword">Password:</label>
+                <div class="password-group">
+                    <input type="password" id="tokenPassword" placeholder="Enter password" autocomplete="off" required>
+                    <button type="button" class="eye-btn"
+                            onmousedown="showPassword('tokenPassword', this)" 
+                            onmouseup="hidePassword('tokenPassword', this)"
+                            onmouseleave="hidePassword('tokenPassword', this)"
+                            ontouchstart="showPassword('tokenPassword', this)"
+                            ontouchend="hidePassword('tokenPassword', this)">O</button>
+                </div>
+                <button type="submit" id="getTokenBtn" class="primary-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pop-up 2: Show Token -->
+    <div id="showTokenModal" class="modal">
+        <div class="modal-content text-center">
+            <span class="close-btn" id="closeShowTokenModal">&times;</span>
+            <h2>Your Token</h2>
+            
+            <!-- เปลี่ยน path รูปภาพตรงนี้ -->
+            <div class="image-container">
+                <img src="web-data/picture/BCD-API-2026.png" alt="Token Preview" style="max-width: 100%; height: auto;">
+            </div>
+            
+            <p class="token-instruction">You can use Window + Shift + T to copy token</p>
+            
+            <button type="button" id="doneTokenBtn" class="primary-btn">Done</button>
+        </div>
+    </div>
+
+    <!--------------------------------------->
+    <!-- Footer                            -->
+    <!--------------------------------------->
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <!-- ฝั่งซ้าย: โลโก้ + คำอธิบายสั้นๆ -->
+            <div class="footer-brand">
+                <a href="index.html" class="footer-logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span>NAJ</span>
+                </a>
+                <p class="footer-desc">Your ultimate gaming hub & custom web library.</p>
+            </div>
+
+            <!-- ฝั่งขวา: เมนูด่วน + ติดต่อ + เครดิต -->
+            <div class="footer-links-group">
+                <!-- ลิงก์เมนูด่วน -->
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="games.html">Games</a></li>
+                        <li><a href="settings.html">Settings</a></li>
+                    </ul>
+                </div>
+
+                <!-- ช่องทางติดต่อ -->
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="https://github.com/EdwardMarico" target="_blank">GitHub</a></li>
+                        <li><a href="https://discord.gg/1060147853185536020" target="_blank">Discord</a></li>
+                        <li><a href="mailto:nuer12345678901234567890@email.com">Email Us</a></li>
+                    </ul>
+                </div>
+
+                <!-- เครดิต & ลิขสิทธิ์ -->
+                <div class="footer-col">
+                    <h4>Credits</h4>
+                    <p>Designed & Developed by <strong>EdwardMarico</strong></p>
+                    <p class="copyright">&copy; 2026 NAJ. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
