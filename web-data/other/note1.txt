@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends</title>
+    <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="web-data/css/friendsStyle.css">
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <a href="index.html" class="logo">
+                <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                <span id="logoText" class="logo-text">NAJ</span>
+            </a>
+            <div class="menu">
+                <div class="hamburger" id="hamburgerMenu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-card">
+            <h2>Menu</h2>
+            <button onclick="navigateTo('games.html')">Games Library</button>
+            <button id="openGetTokenBtn">Get Token</button>
+            <button onclick="navigateTo('index.html')">Credit Website</button>
+            <button onclick="navigateTo('settings.html')">Settings</button>
+        </div>
+    </header>
+
+
+
+    <!--------------------------------------->
+    <!-- Get Token Pop-up                  -->
+    <!--------------------------------------->
+
+    <!-- Pop-up 1: Get Token -->
+    <div id="getTokenModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeGetTokenModal">&times;</span>
+            <h2>Enter Password</h2>
+            <form id="getTokenForm">
+                <label for="tokenPassword">Password:</label>
+                <div class="password-group">
+                    <input type="password" id="tokenPassword" placeholder="Enter password" autocomplete="off" required>
+                    <button type="button" class="eye-btn"
+                            onmousedown="showPassword('tokenPassword', this)" 
+                            onmouseup="hidePassword('tokenPassword', this)"
+                            onmouseleave="hidePassword('tokenPassword', this)"
+                            ontouchstart="showPassword('tokenPassword', this)"
+                            ontouchend="hidePassword('tokenPassword', this)">O</button>
+                </div>
+                <button type="submit" id="getTokenBtn" class="primary-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pop-up 2: Show Token -->
+    <div id="showTokenModal" class="modal">
+        <div class="modal-content text-center">
+            <span class="close-btn" id="closeShowTokenModal">&times;</span>
+            <h2>Your Token</h2>
+            
+            <div class="image-container">
+                <img src="web-data/picture/BCD-API-2026.png" alt="Token Preview" style="max-width: 100%; height: auto;">
+            </div>
+            
+            <p class="token-instruction">You can use Window + Shift + T to copy token</p>
+            
+            <button type="button" id="doneTokenBtn" class="primary-btn">Done</button>
+        </div>
+    </div>
+
+    <!--------------------------------------->
+    <!-- Footer                            -->
+    <!--------------------------------------->
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <!-- ฝั่งซ้าย: โลโก้ + คำอธิบายสั้นๆ -->
+            <div class="footer-brand">
+                <a href="index.html" class="footer-logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span>NAJ</span>
+                </a>
+                <p class="footer-desc">Your ultimate gaming hub & custom web library.</p>
+            </div>
+
+            <!-- ฝั่งขวา: เมนูด่วน + ติดต่อ + เครดิต -->
+            <div class="footer-links-group">
+                <!-- ลิงก์เมนูด่วน -->
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="games.html">Games</a></li>
+                        <li><a href="settings.html">Settings</a></li>
+                    </ul>
+                </div>
+
+                <!-- ช่องทางติดต่อ -->
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="https://github.com/EdwardMarico" target="_blank">GitHub</a></li>
+                        <li><a href="https://discord.gg/1060147853185536020" target="_blank">Discord</a></li>
+                        <li><a href="mailto:nuer12345678901234567890@email.com">Email Us</a></li>
+                    </ul>
+                </div>
+
+                <!-- เครดิต & ลิขสิทธิ์ -->
+                <div class="footer-col">
+                    <h4>Credits</h4>
+                    <p>Designed & Developed by <strong>EdwardMarico</strong></p>
+                    <p class="copyright">&copy; 2026 NAJ. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="web-data/js/friendsJS.js"></script>
+</body>
+</html>
+
+
+
+
+/* ==========================================
+   GLOBAL & RESET SETTINGS
+   ========================================== */
+:root {
+    color-scheme: light;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    forced-color-adjust: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: #f2f2f2 !important;
+    color: #000 !important;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+body.no-scroll {
+    overflow: hidden !important;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* ==========================================
+   TOPBAR & NAVIGATION
+   ========================================== */
+.topbar {
+    width: 100%;
+    height: 60px;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+}
+
+.logo img {
+    height: 36px;
+    background: white;
+    border-radius: 8px;
+}
+
+.logo span {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.logo-text {
+    transition: all 0.2s;
+}
+
+/* Hamburger Icon */
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.hamburger .bar {
+    height: 3px;
+    width: 25px;
+    background: white;
+    margin: 4px 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#hamburgerMenu.active .bar:nth-child(1) {
+    transform: translateY(11px) rotate(45deg);
+}
+
+#hamburgerMenu.active .bar:nth-child(2) {
+    opacity: 0;
+}
+
+#hamburgerMenu.active .bar:nth-child(3) {
+    transform: translateY(-11px) rotate(-45deg);
+}
+
+.menu-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    height: 40px;
+    max-width: 50vw;
+
+    background: transparent;
+    color: #ffffff;
+
+    /* สำคัญ */
+    overflow: visible;
+
+    white-space: nowrap;
+
+    transform-origin: right center;
+    transform: scaleX(0);
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease;
+
+    z-index: 1001;
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.menu-card::-webkit-scrollbar {
+    display: none;
+}
+
+.menu-card.visible {
+    transform: scaleX(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.menu-card h2 {
+    display: none;
+}
+
+.menu-card button {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-card button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #ffffff;
+}
+
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.submenu {
+    display: none;
+
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+
+    background: #1e1e1e;
+    min-width: 170px;
+
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid #333;
+
+    z-index: 99999;
+
+    flex-direction: column;
+    padding: 6px;
+    gap: 4px;
+}
+
+.submenu button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.submenu button:hover {
+    background: #2a2a2a;
+    color: #4da6ff;
+}
+
+.submenu.show {
+    display: flex !important;
+}
+
+#adminCmdBtn {
+    border-color: rgba(239, 68, 68, 0.6);
+    color: #f87171;
+}
+
+#adminCmdBtn:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+/* ==========================================
+   FRIENDS SECTION (HOME PAGE)
+   ========================================== */
+.NAJ-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* ดันเนื้อหาขึ้นไปเริ่มที่ขอบบน */
+    min-height: auto;        /* ยกเลิกการบังคับความสูงเต็มจอ */
+    margin-top: 60px;        /* เว้นระยะหลบ Topbar 60px (หากต้องการให้ติด Topbar พอดี) */
+    padding: 20px 20px 40px 20px; /* ลด Padding ด้านบนเหลือ 20px */
+    box-sizing: border-box;
+}
+
+.NAJ-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.credits {
+    font-size: 40px;
+    font-weight: 800;
+    color: #111111;
+    text-align: center;
+    margin: 0 0 50px 0;
+}
+
+.friends-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.friend-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar-frame {
+    width: 300px;
+    height: 500px;
+    background-color: #18181c;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.avatar-frame:hover {
+    transform: translateY(-12px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0px 20px 35px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.friend-name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #111111;
+    text-align: center;
+}
+
+/* ==========================================
+   ANIMATION FOR PAGE TRANSITIONS
+   ========================================== */
+body {
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+body.fade-in {
+    opacity: 1;
+    transform: scale(1);
+}
+
+body.fade-out {
+    opacity: 0;
+    transform: scale(0.98);
+}
+
+/* ==========================================
+   GLOBAL POPUP MODAL & ANIMATION
+   ========================================== */
+.modal {
+    display: none;
+    position: fixed;
+    
+    /* คลุมเต็มหน้าจอตั้งแต่ขอบบนสุด */
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
+    width: 100%;
+    height: 100dvh; 
+    
+    /* สีพื้นหลังแบบโปร่งแสง */
+    background-color: rgba(0, 0, 0, 0.5);
+    
+    /* ยิงเบลอ Overlay ทับทุกอย่างด้านหลัง (รวมถึง topbar) */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    /* ต้องตั้งให้สูงกว่า z-index ของ topbar เสมอ */
+    z-index: 9999; 
+    
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    
+    opacity: 0;
+    transition: opacity 0.25s ease-out;
+}
+
+.modal-content {
+    background-color: #18181c;
+    color: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    transform: scale(0.85);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#gameForm,
+#deleteForm,
+#getTokenForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+#doneTokenBtn {
+    width: 100%;
+    display: block;
+}
+
+.token-instruction {
+    /*font-size: 14px;*/
+    color: #a0a0a0;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="url"],
+.modal-content input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background-color: #232328;
+    color: #ffffff !important;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.submit-btn,
+.delete-btn,
+.primary-btn {
+    padding: 10px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover,
+.delete-btn:hover,
+.primary-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* Modal Open State */
+.modal.show {
+    display: flex;
+    opacity: 1;
+}
+
+.modal.show .modal-content {
+    transform: scale(1);
+}
+
+/* Modal Close State */
+.modal.closing {
+    opacity: 0;
+}
+
+.modal.closing .modal-content {
+    transform: scale(0.85);
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px; 
+    right: 16px;
+    font-size: 24px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close-btn:hover { 
+    color: #fff; 
+}
+
+/* ==========================================
+   CUSTOM PASSWORD VISIBILITY TOGGLE
+   ========================================== */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
+}
+
+.password-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.password-group input {
+    flex: 1;
+}
+
+.eye-btn {
+    background-color: #232328;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 10px 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, border-color 0.2s;
+    height: 41px;
+    flex-shrink: 0;
+}
+
+.eye-btn:hover {
+    background-color: #333338;
+    border-color: #555;
+}
+
+/* ==========================================
+   TRANSPARENT SITE FOOTER
+   ========================================== */
+.site-footer {
+    width: 100%;
+    background-color: transparent; /* ไม่มี BG */
+    padding: 40px 20px 20px 20px;
+    margin-top: auto; /* ดัน Footer ไปอยู่ล่างสุดเสมอ */
+    border-top: 1px solid rgba(0, 0, 0, 0.1); /* เส้นแบ่งบางๆ ให้ดูเป็นสัดส่วน */
+    box-sizing: border-box;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+/* ฝั่งซ้าย: Logo & Brand */
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 250px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #111;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.footer-logo img {
+    height: 30px; /* ขนาดโลโก้เล็กกำลังพอดี */
+    margin-right: 8px;
+}
+
+.footer-desc {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* ฝั่งขวา: Links & Credits Group */
+.footer-links-group {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-col h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.footer-col a {
+    text-decoration: none;
+    font-size: 13px;
+    color: #555;
+    transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+    color: #111;
+    text-decoration: underline;
+}
+
+.footer-col p {
+    margin: 0;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.footer-col .copyright {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #888;
+}
+
+/* Responsive สำหรับหน้าจอโทรศัพท์ */
+@media (max-width: 600px) {
+    .footer-container {
+        flex-direction: column;
+        gap: 24px;
+    }
+    
+    .footer-links-group {
+        width: 100%;
+        justify-content: space-between;
+        gap: 20px;
+    }
+}
