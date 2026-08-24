@@ -1,4 +1,25 @@
+// ==========================================
+// FORCE PAGE TO START FROM TOP ON LOAD
+// ==========================================
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+window.scrollTo(0, 0);
+
 document.addEventListener("DOMContentLoaded", () => {
+    
+    // ==========================================
+    // INITIALIZE SETTINGS FROM LOCALSTORAGE
+    // ==========================================
+    const savedTheme = localStorage.getItem("app_theme") || "light";
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+
+    const isAnimationEnabled = localStorage.getItem("setting_enableAnimation") !== "false";
+    if (!isAnimationEnabled) {
+        document.body.classList.add("no-animations");
+    }
     
     // ---------- LOGO HOVER EFFECT ----------
     const logoSpan = document.getElementById("logoText");
@@ -32,22 +53,18 @@ document.addEventListener("DOMContentLoaded", () => {
             hamburgerMenu.classList.add("active");
             menuCard.classList.add("visible");
             hamburgerMenu.setAttribute("aria-expanded", "true");
-            syncMenuOverflow(); // คำนวณขนาดใหม่ทันทีที่เปิด
+            syncMenuOverflow();
         };
 
-        // ปรับการคำนวณ: เช็กความสูงเกิน 40% ของหน้าจอ (40vh) ตามที่ต้องการ
         const syncMenuOverflow = () => {
             const maxAllowedWidth = Math.min(window.innerWidth * 0.4, window.innerWidth - 120);
             const shouldScroll = menuCard.scrollWidth > maxAllowedWidth;
 
             menuCard.style.maxWidth = `${maxAllowedWidth}px`;
             menuCard.style.overflowX = shouldScroll ? "auto" : "visible";
-            menuCard.style.overflowY = "visible"; // เปิดให้ Dropdown ยื่นลงมาได้
+            menuCard.style.overflowY = "visible";
         };
 
-        // ==========================================
-        // HAMBURGER BUTTON
-        // ==========================================
         hamburgerMenu.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -56,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 closeMenu();
             } else {
                 openMenu();
-                // ลบการสั่ง style.overflow = "visible" ตรงนี้ออก เพื่อไม่ให้ไปทำลายระบบ Scroll
             }
         });
 
@@ -67,9 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
         window.addEventListener("resize", syncMenuOverflow);
         syncMenuOverflow();
 
-        // ==========================================
-        // CLICK OUTSIDE MENU
-        // ==========================================
         document.addEventListener("click", (e) => {
             const clickedInsideMenu = menuCard.contains(e.target);
             const clickedInsideDropdown = dropdownContainer && dropdownContainer.contains(e.target);
@@ -85,62 +98,35 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-
-        // ==========================================
-        // SMOOTH HORIZONTAL SCROLL
-        // ==========================================
         let targetScrollLeft = 0;
         let isScrolling = false;
 
         function updateScroll() {
-
             const distance = targetScrollLeft - menuCard.scrollLeft;
-
             if (Math.abs(distance) > 0.5) {
-
                 menuCard.scrollLeft += distance * 0.15;
-
                 requestAnimationFrame(updateScroll);
-
             } else {
-
                 menuCard.scrollLeft = targetScrollLeft;
                 isScrolling = false;
-
             }
         }
 
         menuCard.addEventListener("wheel", (e) => {
-
             if (e.deltaY !== 0) {
-
                 e.preventDefault();
-
                 if (!isScrolling) {
                     targetScrollLeft = menuCard.scrollLeft;
                 }
-
                 const scrollSpeed = 0.5;
-
-                const maxScroll =
-                    menuCard.scrollWidth - menuCard.clientWidth;
-
-                targetScrollLeft = Math.max(
-                    0,
-                    Math.min(
-                        maxScroll,
-                        targetScrollLeft + (e.deltaY * scrollSpeed)
-                    )
-                );
+                const maxScroll = menuCard.scrollWidth - menuCard.clientWidth;
+                targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + (e.deltaY * scrollSpeed)));
 
                 if (!isScrolling) {
-
                     isScrolling = true;
-
                     requestAnimationFrame(updateScroll);
                 }
             }
-
         }, { passive: false });
     }
 
@@ -148,9 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // DROPDOWN SUBMENU
     // ==========================================
     if (dropdownToggleBtn && friendsSubmenu) {
-
         document.body.appendChild(friendsSubmenu);
-
         let isAutoScrolling = false;
 
         const updateSubmenuPosition = () => {
@@ -173,31 +157,30 @@ document.addEventListener("DOMContentLoaded", () => {
             
             if (willOpen) {
                 const isAtTop = window.scrollY === 0 || document.documentElement.scrollTop === 0;
+                
+                // เช็กค่า Auto Scroll จาก localStorage
+                const isAutoScrollEnabled = localStorage.getItem("setting_autoScrollTop") !== "false";
 
-                if (isAtTop) {
+                if (isAtTop || !isAutoScrollEnabled) {
                     updateSubmenuPosition();
                     friendsSubmenu.classList.add("show");
                 } else {
                     isAutoScrolling = true;
-
                     window.scrollTo({
                         top: 0,
                         behavior: "smooth"
                     });
 
                     updateSubmenuPosition();
-
                     const animationDuration = 350;
 
                     setTimeout(() => {
                         friendsSubmenu.classList.add("show");
-                        
                         setTimeout(() => {
                             isAutoScrolling = false;
                         }, 100);
                     }, animationDuration);
                 }
-
             } else {
                 friendsSubmenu.classList.remove("show");
             }
@@ -211,30 +194,23 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // --- ระบบล็อกการ Scroll เมื่อเปิด Dropdown (ปิดก่อนค่อยเลื่อน) ---
         let isClosingDropdown = false;
-
         const closeDropdownWithDelay = (e, target) => {
-            // เช็กว่าจุดที่เลื่อน ไม่ได้อยู่ในตัว Dropdown เอง
             const isInsideSubmenu = friendsSubmenu && friendsSubmenu.contains(target);
 
             if (friendsSubmenu.classList.contains("show") && !isInsideSubmenu) {
-                // 1. ดักการ Scroll ไว้ทันที
                 if (e.cancelable) e.preventDefault();
 
                 if (!isClosingDropdown) {
                     isClosingDropdown = true;
-                    friendsSubmenu.classList.remove("show"); // สั่งปิด Dropdown
-
-                    const animationDuration = 350; // รอ Animation ปิด 0.35 วินาที
+                    friendsSubmenu.classList.remove("show");
+                    const animationDuration = 350;
 
                     setTimeout(() => {
                         isClosingDropdown = false;
-                        // พอ Animation ปิดจบแล้ว จะกลับมา Scroll หน้าจอได้ตามปกติ
                     }, animationDuration);
                 }
             } else if (isClosingDropdown) {
-                // ระหว่างที่กำลังรอ Animation ปิด ให้บล็อกการ Scroll นอก Dropdown ไว้ก่อน
                 if (!isInsideSubmenu && e.cancelable) {
                     e.preventDefault();
                 }
@@ -269,10 +245,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const openGetTokenBtn = document.getElementById("openGetTokenBtn");
     const getTokenModal = document.getElementById("getTokenModal");
     const showTokenModal = document.getElementById("showTokenModal");
-
     const closeGetTokenModal = document.getElementById("closeGetTokenModal");
     const closeShowTokenModal = document.getElementById("closeShowTokenModal");
-
     const getTokenForm = document.getElementById("getTokenForm");
     const doneTokenBtn = document.getElementById("doneTokenBtn");
 
@@ -297,11 +271,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (getTokenForm) {
         getTokenForm.addEventListener("submit", (e) => {
             e.preventDefault();
+            const inputPassword = document.getElementById("tokenPassword").value.trim();
             
-            const inputPassword = document.getElementById("tokenPassword").value;
-            const SECRET_PASSWORD = "NuerAnnJim";
+            // รายการรหัสผ่านที่อนุญาต
+            const ALLOWED_PASSWORDS = ["NuerAnnJim", "NAJ", "naj"];
 
-            if (inputPassword === SECRET_PASSWORD) {
+            if (ALLOWED_PASSWORDS.includes(inputPassword)) {
                 closeModal(getTokenModal);
                 openModal(showTokenModal);
             } else {
@@ -319,7 +294,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 // ANIMATION FOR PAGE TRANSITIONS
 // ==========================================
-
 document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(() => {
         document.body.classList.add("fade-in");
@@ -327,6 +301,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function navigateTo(url) {
+    // เช็ก Animation ก่อนทำ Transition
+    if (document.body.classList.contains("no-animations")) {
+        window.location.href = url;
+        return;
+    }
+    
     document.body.classList.remove("fade-in");
     document.body.classList.add("fade-out");
     setTimeout(() => {
@@ -378,6 +358,22 @@ function closeModal(modalElement) {
         modalElement.style.display = "none";
         modalElement.classList.remove("closing");
     }, 250);
+}
+
+function showPassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.type = "text";
+        btn.textContent = "Ø";
+    }
+}
+
+function hidePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.type = "password";
+        btn.textContent = "O";
+    }
 }
 
 // ==========================================

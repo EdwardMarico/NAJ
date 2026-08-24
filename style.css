@@ -36,6 +36,13 @@ body.no-scroll {
     overflow: hidden !important;
 }
 
+body.no-animations *,
+body.no-animations *::before,
+body.no-animations *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
 header {
     position: sticky;
     top: 0;
@@ -183,6 +190,10 @@ header {
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.menu-card button.settings-btn {
+    padding: 8px 8px;
 }
 
 .menu-card button:hover {
