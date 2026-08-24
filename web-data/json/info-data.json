@@ -1,0 +1,38 @@
+{
+  "friends": [
+    {
+      "id": "Nuer",
+      "firstname": "Thiraphat",
+      "lastname": "Yothi",
+      "birthdate": "-",
+      "phone": "-",
+      "lat": 17.191934592561854,
+      "lng": 102.45353787641665,
+      "facebook": "https://www.facebook.com/Thiraphat.II",
+      "avatar": "web-data/picture/Nuer-1_1.png"
+    },
+    {
+      "id": "Ann",
+      "firstname": "Kawin",
+      "lastname": "Pirompoh",
+      "birthdate": "-",
+      "phone": "-",
+      "lat": 17.21349804384911,
+      "lng": 102.43738890589644,
+      "facebook": "https://www.facebook.com/Annn550",
+      "avatar": "web-data/picture/Ann-1_1.jpg"
+    },
+    {
+      "id": "Jim",
+      "firstname": "Archawin",
+      "lastname": "Jantasim",
+      "birthdate": "-",
+      "phone": "-",
+      "lat": 17.249440770850043,
+      "lng": 102.37391267532448,
+      "facebook": "https://www.facebook.com/archawin.jantasim",
+      "avatar": "web-data/picture/Jim-1_1.png"
+    }
+  ]
+  
+}
