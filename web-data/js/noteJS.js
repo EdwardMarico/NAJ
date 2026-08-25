@@ -403,8 +403,19 @@ async function deleteNote(id, token) {
     const note = currentNotesData.find(n => n.id == id);
     if (!note) return;
 
-    currentNotesData = currentNotesData.filter(n => n.id != id);
-    await updateGitHubJSON(currentNotesData, `Delete note: ${note.title}`, token);
+    // กรองเอา Note ที่ต้องการลบออก
+    const updatedNotes = currentNotesData.filter(n => n.id != id);
+
+    try {
+        // ส่งข้อมูลที่อัปเดตแล้วไปบันทึกบน GitHub
+        await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`, token);
+        
+        // บันทึกสำเร็จค่อยอัปเดต state จริงในแอป
+        currentNotesData = updatedNotes;
+    } catch (err) {
+        console.error("Delete failed:", err);
+        // ถ้าเกิด Error ข้อมูลใน currentNotesData จะยังไม่ถูกลบ
+    }
 }
 
 async function updateGitHubJSON(updatedData, commitMessage, token) {
@@ -418,8 +429,12 @@ async function updateGitHubJSON(updatedData, commitMessage, token) {
     const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
 
     try {
+        // 1. ดึง sha ล่าสุดของไฟล์
         const getRes = await fetch(url, {
-            headers: { "Authorization": `token ${authToken}` }
+            headers: { 
+                "Authorization": `Bearer ${authToken}`,
+                "Accept": "application/vnd.github.v3+json"
+            }
         });
 
         if (!getRes.ok) {
@@ -429,13 +444,20 @@ async function updateGitHubJSON(updatedData, commitMessage, token) {
         }
 
         const fileData = await getRes.json();
-        const updatedContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(updatedData, null, 2))));
 
+        // 2. แปลง JSON เป็น Base64 แบบปลอดภัยรองรับภาษาไทย 100%
+        const jsonString = JSON.stringify(updatedData, null, 2);
+        const bytes = new TextEncoder().encode(jsonString);
+        const binString = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+        const updatedContentBase64 = btoa(binString);
+
+        // 3. ส่งข้อมูลไปอัปเดต
         const putRes = await fetch(url, {
             method: "PUT",
             headers: {
-                "Authorization": `token ${authToken}`,
-                "Content-Type": "application/json"
+                "Authorization": `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+                "Accept": "application/vnd.github.v3+json"
             },
             body: JSON.stringify({
                 message: commitMessage,
@@ -446,7 +468,9 @@ async function updateGitHubJSON(updatedData, commitMessage, token) {
 
         if (putRes.ok) {
             alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
-            location.reload();
+            
+            // อัปเดตข้อมูลในหน่วยความจำและ Render ใหม่ทันทีโดยไม่ต้อง reload หน้าเว็บ
+            renderNotes(updatedData); 
         } else {
             const errorData = await putRes.json();
             alert(`เกิดข้อผิดพลาด: ${errorData.message || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
