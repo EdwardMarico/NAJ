@@ -102,6 +102,11 @@
     outline: none; /* เอาเส้นขอบเวลา Focus ออก */
 }
 
+#noteContent {
+    white-space: pre-wrap; /* สั่งให้แสดงผลการขึ้นบรรทัดใหม่และเว้นวรรคตามจริง */
+    word-break: break-word; /* ตัดคำให้อัตโนมัติถ้าข้อความยาวเกิน */
+}
+
 /* สร้าง Placeholder สำหรับ contenteditable */
 #noteContent:empty:before {
     content: attr(data-placeholder);
