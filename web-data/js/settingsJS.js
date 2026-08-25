@@ -10,6 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     type: "select", 
                     value: localStorage.getItem("app_theme") || "light",
                     options: [{ value: "dark", label: "Dark Mode" }, { value: "light", label: "Light Mode" }] 
+                },
+                { 
+                    id: "noteSort", 
+                    title: "Note Sorting", 
+                    desc: "เลือกรูปแบบการเรียงลำดับของ Note", 
+                    type: "select", 
+                    value: localStorage.getItem("note_sort_mode") || "newest",
+                    options: [
+                        { value: "newest", label: "Newest - Oldest" },
+                        { value: "oldest", label: "Oldest - Newest" },
+                        { value: "a-z", label: "ก-ฮ / A-Z" },
+                        { value: "z-a", label: "ฮ-ก / Z-A" }
+                    ] 
                 }
             ]
         },
@@ -167,6 +180,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         } else {
                             document.body.classList.remove("dark-mode");
                         }
+                    }
+
+                    if (settingId === "noteSort") {
+                        localStorage.setItem("note_sort_mode", val);
                     }
                 });
             });

@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const keyword = e.target.value.toLowerCase().trim();
 
             if (keyword === "") {
-                renderNotes(currentNotesData);
+                renderNotes(sortNotes(currentNotesData));
                 return;
             }
 
@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     (note.content && note.content.toLowerCase().includes(keyword)) ||
                     (note.author && note.author.toLowerCase().includes(keyword))
                 );
-                renderNotes(filteredNotes);
+                renderNotes(sortNotes(filteredNotes));
             }, doneTypingInterval);
         });
     }
@@ -313,7 +313,7 @@ async function loadNotes() {
         const localRes = await fetch(GITHUB_FILE_PATH);
         if (localRes.ok) {
             currentNotesData = await localRes.json();
-            renderNotes(currentNotesData);
+            renderNotes(sortNotes(currentNotesData));
             return;
         }
     } catch (err) {
@@ -329,7 +329,7 @@ async function loadNotes() {
             const fileData = await res.json();
             const jsonText = decodeURIComponent(escape(atob(fileData.content)));
             currentNotesData = JSON.parse(jsonText);
-            renderNotes(currentNotesData);
+            renderNotes(sortNotes(currentNotesData));
         } else {
             console.error("หาไฟล์ note.json ไม่พบทั้งแบบ Local และ GitHub API");
         }
@@ -372,6 +372,32 @@ function renderNotes(notes) {
                 `;
         container.appendChild(item);
     });
+}
+
+function sortNotes(notes) {
+    if (!notes || notes.length === 0) return [];
+
+    const sortMode = localStorage.getItem("note_sort_mode") || "newest";
+    const sorted = [...notes]; // ก๊อบปี้เพื่อไม่ให้กระทบ Array เดิม
+
+    sorted.sort((a, b) => {
+        if (sortMode === "newest") {
+            // ใหม่ไปเก่า (อิงจาก id หรือ time)
+            return Number(b.id) - Number(a.id);
+        } else if (sortMode === "oldest") {
+            // เก่าไปใหม่
+            return Number(a.id) - Number(b.id);
+        } else if (sortMode === "a-z") {
+            // เรียงตามชื่อ Title (ก-ฮ / A-Z)
+            return (a.title || "").localeCompare(b.title || "", 'th');
+        } else if (sortMode === "z-a") {
+            // เรียงตามชื่อ Title ย้อนกลับ (ฮ-ก / Z-A)
+            return (b.title || "").localeCompare(a.title || "", 'th');
+        }
+        return 0;
+    });
+
+    return sorted;
 }
 
 function openEditModal(id) {
@@ -488,7 +514,7 @@ async function updateGitHubJSON(updatedData, commitMessage, token) {
             currentNotesData = updatedData; 
             
             // วาด UI ใหม่ด้วยข้อมูลล่าสุด
-            renderNotes(currentNotesData); 
+            renderNotes(sortNotes(currentNotesData)); 
         } else {
             const errorData = await putRes.json();
             alert(`เกิดข้อผิดพลาด: ${errorData.message || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
