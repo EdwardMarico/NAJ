@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const tokenInput = document.getElementById("githubToken");
             const token = tokenInput ? tokenInput.value.trim() : "";
             const title = document.getElementById("noteTitle").value.trim();
-            const content = document.getElementById("noteContent").value.trim();
+            const content = document.getElementById("noteContent").innerHTML.trim();
             
             const authorInput = document.getElementById("noteAuthor");
             const author = authorInput ? authorInput.value : "guest";
@@ -198,24 +198,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- CKHECK TAB ----------
+    // ---------- CKHECK TAB, Ctrl + B, I, U----------
     const noteContentInput = document.getElementById("noteContent");
 
     if (noteContentInput) {
         noteContentInput.addEventListener("keydown", function(e) {
-            // เช็กว่าเป็นปุ่ม Tab หรือไม่
+            // ดักจับปุ่ม Tab เว้นวรรค 3 ช่อง
             if (e.key === "Tab") {
-                e.preventDefault(); // ป้องกันไม่ให้ Cursor กระโดดเปลี่ยน Focus ไป Element อื่น
-
-                const start = this.selectionStart;
-                const end = this.selectionEnd;
-                const spaces = "   "; // เว้นวรรค 3 ช่อง
-
-                // แทรกช่องว่าง 3 ตัวลงตรงตำแหน่งเคอร์เซอร์
-                this.value = this.value.substring(0, start) + spaces + this.value.substring(end);
-
-                // ย้ายเคอร์เซอร์ไปต่อท้ายช่องว่างที่พึ่งแทรกเข้าไป
-                this.selectionStart = this.selectionEnd = start + spaces.length;
+                e.preventDefault();
+                
+                const sel = window.getSelection();
+                if (sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+                    range.deleteContents();
+                    
+                    // แทรกข้อความเว้นวรรค 3 ช่อง
+                    const textNode = document.createTextNode("   ");
+                    range.insertNode(textNode);
+                    
+                    // เลื่อน Cursor ไปต่อท้ายเว้นวรรค
+                    range.setStartAfter(textNode);
+                    range.setEndAfter(textNode);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
             }
         });
     }
@@ -502,4 +508,18 @@ function escapeHtml(str) {
     return String(str).replace(/[&<>'"]/g, 
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
     );
+}
+
+// ปรับฟังก์ชัน escapeHtml ให้แปลง Markdown เป็น HTML พื้นฐาน
+function renderFormattedText(text) {
+    let safeText = escapeHtml(text || '');
+    
+    // แปลง **ข้อความ** เป็น <b>ข้อความ</b>
+    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    // แปลง *ข้อความ* เป็น <i>ข้อความ</i>
+    safeText = safeText.replace(/\*(.*?)\*/g, '<i>$1</i>');
+    // อนุญาตให้ <u>ข้อความ</u> ทำงานได้
+    safeText = safeText.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/g, '<u>$1</u>');
+
+    return safeText;
 }
