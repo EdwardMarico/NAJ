@@ -308,9 +308,17 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 
 async function loadNotes() {
-    // 1. ลองอ่านไฟล์แบบ Read File (Local Path)
+    // 1. อ่านไฟล์ Local แบบปิด Cache
     try {
-        const localRes = await fetch(GITHUB_FILE_PATH);
+        const cacheBuster = `?t=${Date.now()}`;
+        const localRes = await fetch(GITHUB_FILE_PATH + cacheBuster, {
+            cache: "no-store",
+            headers: {
+                "Pragma": "no-cache",
+                "Cache-Control": "no-cache, no-store, must-revalidate"
+            }
+        });
+
         if (localRes.ok) {
             currentNotesData = await localRes.json();
             renderNotes(sortNotes(currentNotesData));
@@ -320,10 +328,16 @@ async function loadNotes() {
         console.warn("ไม่สามารถอ่านไฟล์ Local ได้ จะลองโหลดผ่าน GitHub API...", err);
     }
 
-    // 2. ถ้าอ่าน Local ไม่สำเร็จ ให้ดึงจาก GitHub API แบบ Public (ไม่ต้องใช้ Token)
+    // 2. ดึงจาก GitHub API แบบปิด Cache
     const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     try {
-        const res = await fetch(url); // ไม่ต้องส่ง headers Authorization
+        const res = await fetch(url + `?t=${Date.now()}`, {
+            cache: "no-store",
+            headers: {
+                "Pragma": "no-cache",
+                "Cache-Control": "no-cache, no-store, must-revalidate"
+            }
+        });
 
         if (res.ok) {
             const fileData = await res.json();
