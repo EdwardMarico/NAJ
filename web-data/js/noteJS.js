@@ -406,16 +406,8 @@ async function deleteNote(id, token) {
     // กรองเอา Note ที่ต้องการลบออก
     const updatedNotes = currentNotesData.filter(n => n.id != id);
 
-    try {
-        // ส่งข้อมูลที่อัปเดตแล้วไปบันทึกบน GitHub
-        await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`, token);
-        
-        // บันทึกสำเร็จค่อยอัปเดต state จริงในแอป
-        currentNotesData = updatedNotes;
-    } catch (err) {
-        console.error("Delete failed:", err);
-        // ถ้าเกิด Error ข้อมูลใน currentNotesData จะยังไม่ถูกลบ
-    }
+    // ส่งไปอัปเดต GitHub (ให้ updateGitHubJSON จัดการอัปเดต state และ render)
+    await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`, token);
 }
 
 async function updateGitHubJSON(updatedData, commitMessage, token) {
@@ -469,8 +461,11 @@ async function updateGitHubJSON(updatedData, commitMessage, token) {
         if (putRes.ok) {
             alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
             
-            // อัปเดตข้อมูลในหน่วยความจำและ Render ใหม่ทันทีโดยไม่ต้อง reload หน้าเว็บ
-            renderNotes(updatedData); 
+            // สำคัญมาก: อัปเดตตัวแปร Global หลักให้เป็นข้อมูลล่าสุดทันที
+            currentNotesData = updatedData; 
+            
+            // วาด UI ใหม่ด้วยข้อมูลล่าสุด
+            renderNotes(currentNotesData); 
         } else {
             const errorData = await putRes.json();
             alert(`เกิดข้อผิดพลาด: ${errorData.message || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
