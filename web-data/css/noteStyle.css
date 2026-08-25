@@ -84,6 +84,7 @@
     height: 120px !important;
     min-height: 120px !important;
     max-height: 120px !important;
+
     resize: none !important;
     
     padding: 10px;
@@ -94,12 +95,18 @@
     font-size: 14px;
     box-sizing: border-box;
 
-    /* เปิดให้เลื่อนขึ้นลงได้ */
-    overflow-y: scroll !important;
-    
-    /* ซ่อนแถบ Scrollbar ทุกเบราว์เซอร์ */
-    -ms-overflow-style: none !important;  /* IE and Edge */
-    scrollbar-width: none !important;  /* Firefox */
+    /* จัดการการ Scroll */
+    overflow-y: auto !important;
+    -ms-overflow-style: none !important;  
+    scrollbar-width: none !important;  
+    outline: none; /* เอาเส้นขอบเวลา Focus ออก */
+}
+
+/* สร้าง Placeholder สำหรับ contenteditable */
+#noteContent:empty:before {
+    content: attr(data-placeholder);
+    color: #6b7280;
+    cursor: text;
 }
 
 /* ซ่อนแถบ Scrollbar สำหรับ Chrome / Safari */
