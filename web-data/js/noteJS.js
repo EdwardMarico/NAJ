@@ -198,30 +198,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- CKHECK TAB, Ctrl + B, I, U----------
+    // ---------- CHECK TAB, Ctrl + B, I, U ----------
     const noteContentInput = document.getElementById("noteContent");
 
     if (noteContentInput) {
         noteContentInput.addEventListener("keydown", function(e) {
-            // ดักจับปุ่ม Tab เว้นวรรค 3 ช่อง
+            // ดักจับปุ่ม Tab เพื่อเว้นวรรค 3 ช่อง
             if (e.key === "Tab") {
-                e.preventDefault();
+                e.preventDefault(); // ป้องกันไม่ให้เปลี่ยนโฟกัส
                 
-                const sel = window.getSelection();
-                if (sel.rangeCount > 0) {
-                    const range = sel.getRangeAt(0);
-                    range.deleteContents();
-                    
-                    // แทรกข้อความเว้นวรรค 3 ช่อง
-                    const textNode = document.createTextNode("   ");
-                    range.insertNode(textNode);
-                    
-                    // เลื่อน Cursor ไปต่อท้ายเว้นวรรค
-                    range.setStartAfter(textNode);
-                    range.setEndAfter(textNode);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                }
+                // ใช้ insertHTML แทรก Non-Breaking Space 3 ตัวตรงตำแหน่งเคอร์เซอร์
+                document.execCommand("insertHTML", false, "&nbsp;&nbsp;&nbsp;");
             }
         });
     }
