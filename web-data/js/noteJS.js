@@ -198,6 +198,28 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // ---------- CKHECK TAB ----------
+    const noteContentInput = document.getElementById("noteContent");
+
+    if (noteContentInput) {
+        noteContentInput.addEventListener("keydown", function(e) {
+            // เช็กว่าเป็นปุ่ม Tab หรือไม่
+            if (e.key === "Tab") {
+                e.preventDefault(); // ป้องกันไม่ให้ Cursor กระโดดเปลี่ยน Focus ไป Element อื่น
+
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const spaces = "   "; // เว้นวรรค 3 ช่อง
+
+                // แทรกช่องว่าง 3 ตัวลงตรงตำแหน่งเคอร์เซอร์
+                this.value = this.value.substring(0, start) + spaces + this.value.substring(end);
+
+                // ย้ายเคอร์เซอร์ไปต่อท้ายช่องว่างที่พึ่งแทรกเข้าไป
+                this.selectionStart = this.selectionEnd = start + spaces.length;
+            }
+        });
+    }
+
     // ---------- DELETE NOTE FORM EVENTS ----------
     const deleteModal = document.getElementById("deleteModal");
     const closeDeleteModal = document.getElementById("closeDeleteModal");
