@@ -496,14 +496,20 @@ function escapeHtml(str) {
 
 // ปรับฟังก์ชัน escapeHtml ให้แปลง Markdown เป็น HTML พื้นฐาน
 function renderFormattedText(text) {
-    let safeText = escapeHtml(text || '');
-    
-    // แปลง **ข้อความ** เป็น <b>ข้อความ</b>
-    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-    // แปลง *ข้อความ* เป็น <i>ข้อความ</i>
-    safeText = safeText.replace(/\*(.*?)\*/g, '<i>$1</i>');
-    // อนุญาตให้ <u>ข้อความ</u> ทำงานได้
-    safeText = safeText.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/g, '<u>$1</u>');
+    if (!text) return '';
 
-    return safeText;
+    let content = text;
+
+    // 1. แปลง URL (http, https, www) ให้กลายเป็นลิงก์ <a>
+    const urlPattern = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/g;
+    content = content.replace(urlPattern, (url) => {
+        const href = url.startsWith('www.') ? `http://${url}` : url;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; text-decoration: underline; position: relative; z-index: 10;" onclick="event.stopPropagation();">${url}</a>`;
+    });
+
+    // 2. แปลง Markdown ตัวหนา ตัวเอียง
+    content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    content = content.replace(/\*(.*?)\*/g, '<i>$1</i>');
+
+    return content;
 }
