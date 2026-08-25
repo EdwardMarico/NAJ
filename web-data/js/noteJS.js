@@ -101,7 +101,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const tokenInput = document.getElementById("githubToken");
             const token = tokenInput ? tokenInput.value.trim() : "";
             const title = document.getElementById("noteTitle").value.trim();
-            const content = document.getElementById("noteContent").innerHTML.trim();
+            
+            // 1. ดึง HTML Raw จาก contenteditable
+            let rawContent = document.getElementById("noteContent").innerHTML;
+
+            // 2. คลีนแท็ก <div> และ <br> ให้แปลงเป็น \n หรือตัดแท็กส่วนเกินออก
+            const content = rawContent
+                .replace(/<div><br><\/div>/gi, "\n")
+                .replace(/<div>/gi, "\n")
+                .replace(/<\/div>/gi, "")
+                .replace(/<br\s*[\/]?>/gi, "\n")
+                .trim();
             
             const authorInput = document.getElementById("noteAuthor");
             const author = authorInput ? authorInput.value : "guest";
@@ -156,8 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 safeCloseModal(modal);
                 
+                // ล้างค่าใน Form (ปรับ noteContent เป็น innerHTML)
                 document.getElementById("noteTitle").value = "";
-                document.getElementById("noteContent").value = "";
+                document.getElementById("noteContent").innerHTML = "";
                 document.getElementById("noteId").value = "";
 
             } catch (error) {
