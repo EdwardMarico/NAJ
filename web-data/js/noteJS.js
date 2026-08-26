@@ -5,13 +5,12 @@ const GITHUB_USERNAME = "EdwardMarico";
 const GITHUB_REPO = "NAJ";
 const GITHUB_FILE_PATH = "web-data/json/note-data.json"; 
 
-// 🔗 URL ปลายทาง Backend บน Render
-const BACKEND_API_URL = "https://naj-backend.onrender.com/api/save-notes";
+// 🔗 อัปเดต URL ปลายทาง Backend บน Render ให้ตรงกับภาพ Error
+const BACKEND_API_URL = "https://naj-note-backend.onrender.com/api/save-notes";
 
 let currentNotesData = [];
-let originalNoteObj = null; // เก็บค่าเดิมไว้เปรียบเทียบ
+let originalNoteObj = null; 
 
-// Safe wrapper สำหรับเรียกใช้ openModal / closeModal จาก -script.js
 function safeOpenModal(modalEl) {
     if (typeof openModal === "function") {
         openModal(modalEl);
@@ -28,7 +27,6 @@ function safeCloseModal(modalEl) {
     }
 }
 
-// ฟังก์ชันสำหรับ Set ค่า Profile (ยกมาไว้นอก DOMContentLoaded เพื่อให้ openEditModal เรียกใช้ได้)
 function setCustomSelectValue(val) {
     const targetVal = val || "Kawin";
     const noteAuthorInput = document.getElementById("noteAuthor");
@@ -49,10 +47,8 @@ function setCustomSelectValue(val) {
 
 document.addEventListener("DOMContentLoaded", () => {
     
-    // ---------- LOAD DATA & INITIALIZE ----------
     loadNotes();
 
-    // ---------- MODAL & FORM EVENTS ----------
     const modal = document.getElementById("noteModal");
     const openModalBtn = document.getElementById("addNoteBtn") || document.getElementById("openModalBtn");
     const closeModalBtn = modal ? modal.querySelector(".close-btn") : null;
@@ -60,7 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalTitle = document.getElementById("modalTitle");
     const submitBtn = document.getElementById("submitBtn");
 
-    // เปิด Pop-up Add Note
     if (openModalBtn) {
         openModalBtn.addEventListener("click", () => {
             if (modalTitle) modalTitle.textContent = "Add New Note";
@@ -80,21 +75,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ปิด Pop-up เมื่อกดปุ่ม ×
     if (closeModalBtn) {
         closeModalBtn.addEventListener("click", () => {
             safeCloseModal(modal);
         });
     }
 
-    // คลิกพื้นหลังนอก Pop-up เพื่อปิด
     window.addEventListener("click", (e) => {
         if (e.target === modal) safeCloseModal(modal);
         const deleteModal = document.getElementById("deleteModal");
         if (e.target === deleteModal) safeCloseModal(deleteModal);
     });
 
-    // Submit Form (Add & Edit) - ตัดการเช็ก Token ออก
     if (noteForm) {
         noteForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -102,10 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const id = document.getElementById("noteId").value;
             const title = document.getElementById("noteTitle").value.trim();
             
-            // 1. ดึง HTML Raw จาก contenteditable
             let rawContent = document.getElementById("noteContent").innerHTML;
 
-            // 2. คลีนแท็ก <div> และ <br> ให้แปลงเป็น \n หรือตัดแท็กส่วนเกินออก
             const content = rawContent
                 .replace(/<div><br><\/div>/gi, "\n")
                 .replace(/<div>/gi, "\n")
@@ -116,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const authorInput = document.getElementById("noteAuthor");
             const author = authorInput ? authorInput.value : "guest";
 
-            // เช็กกรณีเป็น Edit แล้วไม่มีการแก้ไขข้อมูล
             if (id && typeof originalNoteObj !== "undefined" && originalNoteObj) {
                 if (
                     originalNoteObj.title === title && 
@@ -161,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 safeCloseModal(modal);
                 
-                // ล้างค่าใน Form (ปรับ noteContent เป็น innerHTML)
                 document.getElementById("noteTitle").value = "";
                 document.getElementById("noteContent").innerHTML = "";
                 document.getElementById("noteId").value = "";
@@ -178,7 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- REAL-TIME SEARCH ----------
     const searchInput = document.getElementById("searchInput");
     let typingTimer;
     const doneTypingInterval = 300;
@@ -204,7 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- CHECK TAB KEY ----------
     const noteContentInput = document.getElementById("noteContent");
 
     if (noteContentInput) {
@@ -216,7 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- DELETE NOTE FORM EVENTS ----------
     const deleteModal = document.getElementById("deleteModal");
     const closeDeleteModal = document.getElementById("closeDeleteModal");
     const deleteForm = document.getElementById("deleteForm");
@@ -227,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // Submit Form Delete Note - ตัดการเช็ก Token ออก
     if (deleteForm) {
         deleteForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -255,7 +239,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- CUSTOM DROPDOWN ----------
     const selectWrapper = document.querySelector(".custom-select-wrapper");
     const selectTrigger = document.getElementById("customSelectTrigger");
     const customOptions = document.querySelectorAll(".custom-option");
@@ -291,11 +274,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// FUNCTIONS (LOAD, RENDER, MODAL & BACKEND API)
+// FUNCTIONS 
 // ==========================================
 
 async function loadNotes() {
-    // 1. อ่านไฟล์ Local แบบปิด Cache
     try {
         const cacheBuster = `?t=${Date.now()}`;
         const localRes = await fetch(GITHUB_FILE_PATH + cacheBuster, {
@@ -315,7 +297,6 @@ async function loadNotes() {
         console.warn("ไม่สามารถอ่านไฟล์ Local ได้ จะลองโหลดผ่าน GitHub API...", err);
     }
 
-    // 2. ดึงจาก GitHub API แบบปิด Cache
     const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
     try {
         const res = await fetch(url + `?t=${Date.now()}`, {
@@ -339,7 +320,6 @@ async function loadNotes() {
     }
 }
 
-// วางไว้ด้านบนสุดของไฟล์ noteJS.js
 function escapeHtml(str) {
     return String(str).replace(/[&<>'"]/g, 
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
@@ -447,7 +427,6 @@ function openDeleteModal(id) {
     }
 }
 
-// ลบ Note (ไม่ต้องใช้ Token)
 async function deleteNote(id) {
     const note = currentNotesData.find(n => n.id == id);
     if (!note) return;
@@ -456,7 +435,6 @@ async function deleteNote(id) {
     await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`);
 }
 
-// อัปเดตข้อมูลไปยัง Backend API (รับ updatedNotes และ commitMessage)
 async function updateGitHubJSON(updatedNotes, commitMessage) {
     try {
         const response = await fetch(BACKEND_API_URL, {
@@ -465,8 +443,8 @@ async function updateGitHubJSON(updatedNotes, commitMessage) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                updatedNotes: updatedNotes,  // ส่งก้อนข้อมูล array ของ Note
-                commitMessage: commitMessage // ส่งข้อความ Commit
+                updatedNotes: updatedNotes,  
+                commitMessage: commitMessage 
             })
         });
 
@@ -479,7 +457,6 @@ async function updateGitHubJSON(updatedNotes, commitMessage) {
 
         if (result.success) {
             alert("บันทึก Note ลง GitHub เรียบร้อยแล้ว!");
-            // รีโหลดข้อมูลใหม่เพื่ออัปเดตหน้าจอทันที
             await loadNotes();
         } else {
             alert(`เกิดข้อผิดพลาดจาก Backend: ${JSON.stringify(result.error)}`);
