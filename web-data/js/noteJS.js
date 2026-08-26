@@ -470,8 +470,8 @@ async function deleteNote(id) {
 
 async function updateGitHubJSON(updatedData, commitMessage) {
     try {
-        // ยิงไปหา Backend API (server.js) ที่รันอยู่ที่พอร์ต 3000
-        const response = await fetch("http://localhost:3000/api/save-notes", {
+        // ยิงไปหา Backend API (-server.js)
+        const response = await fetch("https://naj-backend.onrender.com", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
