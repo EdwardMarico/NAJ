@@ -6,7 +6,7 @@ const GITHUB_REPO = "NAJ";
 const GITHUB_FILE_PATH = "web-data/json/note-data.json"; 
 
 // 🔗 อัปเดต URL ปลายทาง Backend บน Render ให้ตรงกับภาพ Error
-const BACKEND_API_URL = "https://naj-note-backend.onrender.com/api/save-notes";
+const BACKEND_API_URL = "https://naj-backend.onrender.com/api/save-notes";
 
 let currentNotesData = [];
 let originalNoteObj = null; 
