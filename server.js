@@ -37,6 +37,7 @@ app.post('/api/save-notes', async (req, res) => {
         const filePath = "web-data/json/note-data.json";
         const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${filePath}`;
 
+        // ดึง sha ล่าสุดของไฟล์
         const getRes = await fetch(url, {
             headers: { 
                 "Authorization": `Bearer ${GITHUB_TOKEN}`,
@@ -44,9 +45,12 @@ app.post('/api/save-notes', async (req, res) => {
                 "User-Agent": GITHUB_USERNAME
             }
         });
-
-        if (!getRes.ok) throw new Error("ไม่สามารถอ่าน sha จาก GitHub ได้");
-        const fileData = await getRes.json();
+        
+        // ปรับปรุงส่วนแจ้ง Error ให้ละเอียดขึ้น
+        if (!getRes.ok) {
+            const errorBody = await getRes.json().catch(() => ({}));
+            throw new Error(`ไม่สามารถอ่าน sha จาก GitHub ได้ (Status: ${getRes.status} - ${errorBody.message || 'Unknown Error'})`);
+        }
 
         const jsonString = JSON.stringify(updatedNotes, null, 2);
         const updatedContentBase64 = Buffer.from(jsonString).toString('base64');
@@ -86,6 +90,7 @@ app.post('/api/save-games', async (req, res) => {
         const filePath = "web-data/json/games-data.json";
         const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${filePath}`;
 
+        // ดึง sha ล่าสุดของไฟล์
         const getRes = await fetch(url, {
             headers: { 
                 "Authorization": `Bearer ${GITHUB_TOKEN}`,
@@ -93,9 +98,12 @@ app.post('/api/save-games', async (req, res) => {
                 "User-Agent": GITHUB_USERNAME
             }
         });
-
-        if (!getRes.ok) throw new Error("ไม่สามารถอ่าน sha จาก GitHub ได้");
-        const fileData = await getRes.json();
+        
+        // ปรับปรุงส่วนแจ้ง Error ให้ละเอียดขึ้น
+        if (!getRes.ok) {
+            const errorBody = await getRes.json().catch(() => ({}));
+            throw new Error(`ไม่สามารถอ่าน sha จาก GitHub ได้ (Status: ${getRes.status} - ${errorBody.message || 'Unknown Error'})`);
+        }
 
         const jsonString = JSON.stringify(updatedGames, null, 2);
         const updatedContentBase64 = Buffer.from(jsonString).toString('base64');
