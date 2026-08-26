@@ -449,15 +449,18 @@ async function deleteNote(id) {
     await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`);
 }
 
-// อัปเดตข้อมูลไปยัง Backend API
-async function updateGitHubJSON() {
+// อัปเดตข้อมูลไปยัง Backend API (แก้ไขรับค่า updatedData และ commitMessage)
+async function updateGitHubJSON(updatedData, commitMessage) {
     try {
-        const response = await fetch('https://naj-note-backend.onrender.com/api/save-notes', {
+        const response = await fetch('https://naj-backend.onrender.com/api/save-notes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                updatedNotes: updatedData,
+                commitMessage: commitMessage
+            })
         });
 
         if (!response.ok) {
@@ -465,16 +468,20 @@ async function updateGitHubJSON() {
         }
 
         const result = await response.json();
+
+        if (result.success) {
+            alert("บันทึก Note เรียบร้อยแล้ว!");
+            currentNotesData = updatedData;
+            renderNotes(sortNotes(currentNotesData));
+        } else {
+            alert(`เกิดข้อผิดพลาดจาก Server: ${result.error}`);
+        }
+
         return result;
     } catch (error) {
         console.error('Error updating via backend:', error);
+        alert("ไม่สามารถเชื่อมต่อกับ Server เพื่อบันทึกข้อมูลได้");
     }
-}
-
-function escapeHtml(str) {
-    return String(str).replace(/[&<>'"]/g, 
-        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-    );
 }
 
 function renderFormattedText(text) {
