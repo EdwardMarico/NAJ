@@ -116,11 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const authorInput = document.getElementById("noteAuthor");
             const author = authorInput ? authorInput.value : "guest";
 
-            if (!token) {
-                alert("กรุณากรอก GitHub Token");
-                return;
-            }
-
             // เช็กกรณีเป็น Edit แล้วไม่มีการแก้ไขข้อมูล
             if (id && typeof originalNoteObj !== "undefined" && originalNoteObj) {
                 if (
@@ -462,7 +457,7 @@ function openDeleteModal(id) {
     }
 }
 
-async function deleteNote(id, token) {
+async function deleteNote(id) {
     const note = currentNotesData.find(n => n.id == id);
     if (!note) return;
 
@@ -473,68 +468,36 @@ async function deleteNote(id, token) {
     await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`, token);
 }
 
-async function updateGitHubJSON(updatedData, commitMessage, token) {
-    const authToken = token || GITHUB_TOKEN;
-
-    if (!authToken) {
-        alert("กรุณากรอก GitHub Token ก่อนทำรายการ");
-        throw new Error("Missing GitHub Token");
-    }
-
-    const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
-
+async function updateGitHubJSON(updatedData, commitMessage) {
     try {
-        // 1. ดึง sha ล่าสุดของไฟล์
-        const getRes = await fetch(url, {
-            headers: { 
-                "Authorization": `Bearer ${authToken}`,
-                "Accept": "application/vnd.github.v3+json"
-            }
-        });
-
-        if (!getRes.ok) {
-            const errData = await getRes.json();
-            console.error("GitHub Fetch Error:", errData);
-            throw new Error("ไม่สามารถอ่านข้อมูลจาก GitHub ได้ เช็ก Token หรือ Repo อีกครั้ง");
-        }
-
-        const fileData = await getRes.json();
-
-        // 2. แปลง JSON เป็น Base64 แบบปลอดภัยรองรับภาษาไทย 100%
-        const jsonString = JSON.stringify(updatedData, null, 2);
-        const bytes = new TextEncoder().encode(jsonString);
-        const binString = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
-        const updatedContentBase64 = btoa(binString);
-
-        // 3. ส่งข้อมูลไปอัปเดต
-        const putRes = await fetch(url, {
-            method: "PUT",
+        // ยิงไปหา Backend API (server.js) ที่รันอยู่ที่พอร์ต 3000
+        const response = await fetch("http://localhost:3000/api/save-notes", {
+            method: "POST",
             headers: {
-                "Authorization": `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-                "Accept": "application/vnd.github.v3+json"
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                message: commitMessage,
-                content: updatedContentBase64,
-                sha: fileData.sha
+                updatedNotes: updatedData,
+                commitMessage: commitMessage
             })
         });
 
-        if (putRes.ok) {
+        const result = await response.json();
+
+        if (response.ok && result.success) {
             alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
             
-            // สำคัญมาก: อัปเดตตัวแปร Global หลักให้เป็นข้อมูลล่าสุดทันที
+            // อัปเดตตัวแปร Global หลักให้เป็นข้อมูลล่าสุด
             currentNotesData = updatedData; 
             
-            // วาด UI ใหม่ด้วยข้อมูลล่าสุด
+            // วาด UI ใหม่ด้วยข้อมูลล่าสุดและจัดเรียง
             renderNotes(sortNotes(currentNotesData)); 
         } else {
-            const errorData = await putRes.json();
-            alert(`เกิดข้อผิดพลาด: ${errorData.message || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
+            alert(`เกิดข้อผิดพลาด: ${result.error || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
         }
     } catch (err) {
-        console.error("Error updating GitHub:", err);
+        console.error("Error updating via backend:", err);
+        alert("ไม่สามารถเชื่อมต่อกับ Backend Server ได้ (อย่าลืมรัน node server.js ครับ)");
         throw err;
     }
 }
