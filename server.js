@@ -11,6 +11,13 @@ const GITHUB_REPO = "NAJ";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // อ่าน Token จาก Environment Variables บน Render
 
 // -------------------------------------------------------------
+// 0. HEALTH CHECK ROUTE (ป้องกัน Error 404 เมื่อเรียก Root URL)
+// -------------------------------------------------------------
+app.get('/', (req, res) => {
+    res.send('NAJ Backend Server is running successfully!');
+});
+
+// -------------------------------------------------------------
 // 1. API สำหรับระบบ NOTE LIBRARY (ไฟล์ note-data.json)
 // -------------------------------------------------------------
 app.post('/api/save-notes', async (req, res) => {
