@@ -81,19 +81,6 @@
                     </div>
                 </div>
 
-                <label for="githubToken">GitHub Access Token:</label>
-                <div class="form-group" id="tokenGroup">
-                    <div class="password-group">
-                        <input type="password" id="githubToken" placeholder="github_pat_..." autocomplete="off" required>
-                        <button type="button" class="eye-btn"
-                                onmousedown="showPassword('githubToken', this)" 
-                                onmouseup="hidePassword('githubToken', this)"
-                                onmouseleave="hidePassword('githubToken', this)"
-                                ontouchstart="showPassword('githubToken', this)"
-                                ontouchend="hidePassword('githubToken', this)">O</button>
-                    </div>
-                </div>
-
                 <label for="noteTitle">Note Title:</label>
                 <input type="text" id="noteTitle" placeholder="เช่น How about today?" required>
                 
@@ -111,21 +98,10 @@
     <div id="deleteModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeDeleteModal">&times;</span>
-            <h2 id="modalTitle">Enter GitHub Token</h2>
+            <h2 id="modalTitle">Delete Note ?</h2>
             <form id="deleteForm">
                 <!-- ซ่อน ID ของเกมที่จะลบไว้ตรงนี้ -->
                 <input type="hidden" id="deleteGameId">
-                
-                <label for="deleteGithubToken">GitHub Access Token:</label>
-                <div class="password-group">
-                    <input type="password" id="deleteGithubToken" placeholder="github_pat_..." autocomplete="off" required>
-                    <button type="button" class="eye-btn"
-                            onmousedown="showPassword('deleteGithubToken', this)" 
-                            onmouseup="hidePassword('deleteGithubToken', this)"
-                            onmouseleave="hidePassword('deleteGithubToken', this)"
-                            ontouchstart="showPassword('deleteGithubToken', this)"
-                            ontouchend="hidePassword('deleteGithubToken', this)">O</button>
-                </div>
 
                 <p class="note-instruction">(It might take a while for the changes to happen)</p>
 
