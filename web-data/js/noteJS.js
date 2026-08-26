@@ -339,6 +339,13 @@ async function loadNotes() {
     }
 }
 
+// วางไว้ด้านบนสุดของไฟล์ noteJS.js
+function escapeHtml(str) {
+    return String(str).replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
+}
+
 function renderNotes(notes) {
     const container = document.getElementById("noteList");
     if (!container) return;
