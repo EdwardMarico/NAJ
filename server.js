@@ -4,7 +4,16 @@ const cors = require('cors');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const app = express();
-app.use(cors());
+
+// -------------------------------------------------------------
+// ปรับแต่ง CORS Policy เพื่อปลดบล็อก Request จาก GitHub Pages
+// -------------------------------------------------------------
+app.use(cors({
+    origin: '*', // หรือกำหนดเฉพาะ domain เช่น 'https://edwardmarico.github.io'
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 const GITHUB_USERNAME = "EdwardMarico";
