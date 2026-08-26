@@ -4,7 +4,9 @@
 const GITHUB_USERNAME = "EdwardMarico";
 const GITHUB_REPO = "NAJ";
 const GITHUB_FILE_PATH = "web-data/json/note-data.json"; 
-const GITHUB_TOKEN = ""; 
+
+// 🔗 URL ปลายทาง Backend บน Render
+const BACKEND_API_URL = "https://naj-note-backend.onrender.com/api/save-notes";
 
 let currentNotesData = [];
 let originalNoteObj = null; // เก็บค่าเดิมไว้เปรียบเทียบ
@@ -92,14 +94,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target === deleteModal) safeCloseModal(deleteModal);
     });
 
-    // Submit Form (Add & Edit)
+    // Submit Form (Add & Edit) - ตัดการเช็ก Token ออก
     if (noteForm) {
         noteForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const id = document.getElementById("noteId").value;
-            const tokenInput = document.getElementById("githubToken");
-            const token = tokenInput ? tokenInput.value.trim() : "";
             const title = document.getElementById("noteTitle").value.trim();
             
             // 1. ดึง HTML Raw จาก contenteditable
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 const commitMsg = id ? `Edit note: ${title}` : `Add note: ${title}`;
-                await updateGitHubJSON(currentNotesData, commitMsg, token);
+                await updateGitHubJSON(currentNotesData, commitMsg);
 
                 safeCloseModal(modal);
                 
@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch (error) {
                 console.error(error);
-                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาเช็ก Token อีกครั้ง");
+                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
             } finally {
                 if (submitBtn) {
                     submitBtn.textContent = "Save Note";
@@ -204,16 +204,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- CHECK TAB, Ctrl + B, I, U ----------
+    // ---------- CHECK TAB KEY ----------
     const noteContentInput = document.getElementById("noteContent");
 
     if (noteContentInput) {
         noteContentInput.addEventListener("keydown", function(e) {
-            // ดักจับปุ่ม Tab เพื่อเว้นวรรค 3 ช่อง
             if (e.key === "Tab") {
-                e.preventDefault(); // ป้องกันไม่ให้เปลี่ยนโฟกัส
-                
-                // ใช้ insertHTML แทรก Non-Breaking Space 3 ตัวตรงตำแหน่งเคอร์เซอร์
+                e.preventDefault(); 
                 document.execCommand("insertHTML", false, "&nbsp;&nbsp;&nbsp;");
             }
         });
@@ -230,18 +227,13 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
+    // Submit Form Delete Note - ตัดการเช็ก Token ออก
     if (deleteForm) {
         deleteForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const id = document.getElementById("deleteGameId").value;
-            const token = document.getElementById("deleteGithubToken").value.trim();
             const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-
-            if (!token) {
-                alert("กรุณากรอก GitHub Token");
-                return;
-            }
 
             if (confirmDeleteBtn) {
                 confirmDeleteBtn.textContent = "Deleting...";
@@ -249,11 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                await deleteNote(id, token);
+                await deleteNote(id);
                 safeCloseModal(deleteModal);
             } catch (err) {
                 console.error(err);
-                alert("เกิดข้อผิดพลาดในการลบข้อมูล กรุณาเช็ก Token อีกครั้ง");
+                alert("เกิดข้อผิดพลาดในการลบข้อมูล");
             } finally {
                 if (confirmDeleteBtn) {
                     confirmDeleteBtn.textContent = "Delete Note";
@@ -299,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// FUNCTIONS (LOAD, RENDER, MODAL & GITHUB API)
+// FUNCTIONS (LOAD, RENDER, MODAL & BACKEND API)
 // ==========================================
 
 async function loadNotes() {
@@ -387,20 +379,16 @@ function sortNotes(notes) {
     if (!notes || notes.length === 0) return [];
 
     const sortMode = localStorage.getItem("note_sort_mode") || "newest";
-    const sorted = [...notes]; // ก๊อบปี้เพื่อไม่ให้กระทบ Array เดิม
+    const sorted = [...notes];
 
     sorted.sort((a, b) => {
         if (sortMode === "newest") {
-            // ใหม่ไปเก่า (อิงจาก id หรือ time)
             return Number(b.id) - Number(a.id);
         } else if (sortMode === "oldest") {
-            // เก่าไปใหม่
             return Number(a.id) - Number(b.id);
         } else if (sortMode === "a-z") {
-            // เรียงตามชื่อ Title (ก-ฮ / A-Z)
             return (a.title || "").localeCompare(b.title || "", 'th');
         } else if (sortMode === "z-a") {
-            // เรียงตามชื่อ Title ย้อนกลับ (ฮ-ก / Z-A)
             return (b.title || "").localeCompare(a.title || "", 'th');
         }
         return 0;
@@ -445,33 +433,26 @@ document.addEventListener('click', () => {
 function openDeleteModal(id) {
     const deleteModal = document.getElementById("deleteModal");
     const deleteGameIdInput = document.getElementById("deleteGameId");
-    const deleteTokenInput = document.getElementById("deleteGithubToken");
 
     if (deleteModal && deleteGameIdInput) {
         deleteGameIdInput.value = id;
         safeOpenModal(deleteModal);
-        
-        if (deleteTokenInput) {
-            deleteTokenInput.focus();
-        }
     }
 }
 
+// ลบ Note (ไม่ต้องใช้ Token)
 async function deleteNote(id) {
     const note = currentNotesData.find(n => n.id == id);
     if (!note) return;
 
-    // กรองเอา Note ที่ต้องการลบออก
     const updatedNotes = currentNotesData.filter(n => n.id != id);
-
-    // ส่งไปอัปเดต GitHub (ให้ updateGitHubJSON จัดการอัปเดต state และ render)
-    await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`, token);
+    await updateGitHubJSON(updatedNotes, `Delete note: ${note.title}`);
 }
 
+// อัปเดตข้อมูลไปยัง Backend API
 async function updateGitHubJSON(updatedData, commitMessage) {
     try {
-        // ยิงไปหา Backend API (-server.js)
-        const response = await fetch("https://naj-backend.onrender.com", {
+        const response = await fetch(BACKEND_API_URL, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -486,18 +467,14 @@ async function updateGitHubJSON(updatedData, commitMessage) {
 
         if (response.ok && result.success) {
             alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
-            
-            // อัปเดตตัวแปร Global หลักให้เป็นข้อมูลล่าสุด
             currentNotesData = updatedData; 
-            
-            // วาด UI ใหม่ด้วยข้อมูลล่าสุดและจัดเรียง
             renderNotes(sortNotes(currentNotesData)); 
         } else {
             alert(`เกิดข้อผิดพลาด: ${result.error || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
         }
     } catch (err) {
         console.error("Error updating via backend:", err);
-        alert("ไม่สามารถเชื่อมต่อกับ Backend Server ได้ (อย่าลืมรัน node server.js ครับ)");
+        alert("ไม่สามารถเชื่อมต่อกับ Backend Server ได้");
         throw err;
     }
 }
@@ -508,20 +485,17 @@ function escapeHtml(str) {
     );
 }
 
-// ปรับฟังก์ชัน escapeHtml ให้แปลง Markdown เป็น HTML พื้นฐาน
 function renderFormattedText(text) {
     if (!text) return '';
 
     let content = text;
 
-    // 1. แปลง URL (http, https, www) ให้กลายเป็นลิงก์ <a>
     const urlPattern = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/g;
     content = content.replace(urlPattern, (url) => {
         const href = url.startsWith('www.') ? `http://${url}` : url;
         return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; text-decoration: underline; position: relative; z-index: 10;" onclick="event.stopPropagation();">${url}</a>`;
     });
 
-    // 2. แปลง Markdown ตัวหนา ตัวเอียง
     content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
     content = content.replace(/\*(.*?)\*/g, '<i>$1</i>');
 
