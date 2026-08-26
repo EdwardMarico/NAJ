@@ -450,32 +450,24 @@ async function deleteNote(id) {
 }
 
 // อัปเดตข้อมูลไปยัง Backend API
-async function updateGitHubJSON(updatedData, commitMessage) {
+async function updateGitHubJSON() {
     try {
-        const response = await fetch(BACKEND_API_URL, {
-            method: "POST",
+        const response = await fetch('https://naj-note-backend.onrender.com/api/save-notes', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json"
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                updatedNotes: updatedData,
-                commitMessage: commitMessage
-            })
+            body: JSON.stringify(data)
         });
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
-            currentNotesData = updatedData; 
-            renderNotes(sortNotes(currentNotesData)); 
-        } else {
-            alert(`เกิดข้อผิดพลาด: ${result.error || 'อัปเดตไฟล์ไม่สำเร็จ'}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    } catch (err) {
-        console.error("Error updating via backend:", err);
-        alert("ไม่สามารถเชื่อมต่อกับ Backend Server ได้");
-        throw err;
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error updating via backend:', error);
     }
 }
 
