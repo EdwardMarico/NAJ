@@ -1,7 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+// แก้ไขการนำเข้า node-fetch ให้ถูกต้องตามเวอร์ชัน 2.x เพื่อป้องกัน Backend ล่ม
+const fetch = require('node-fetch');
 
 const app = express();
 
@@ -9,7 +10,7 @@ const app = express();
 // ปรับแต่ง CORS Policy เพื่อปลดบล็อก Request จาก GitHub Pages
 // -------------------------------------------------------------
 app.use(cors({
-    origin: '*', // หรือกำหนดเฉพาะ domain เช่น 'https://edwardmarico.github.io'
+    origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -36,7 +37,6 @@ app.post('/api/save-notes', async (req, res) => {
         const filePath = "web-data/json/note-data.json";
         const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${filePath}`;
 
-        // ดึง sha ล่าสุดของไฟล์
         const getRes = await fetch(url, {
             headers: { 
                 "Authorization": `Bearer ${GITHUB_TOKEN}`,
@@ -48,11 +48,9 @@ app.post('/api/save-notes', async (req, res) => {
         if (!getRes.ok) throw new Error("ไม่สามารถอ่าน sha จาก GitHub ได้");
         const fileData = await getRes.json();
 
-        // แปลงข้อมูลเป็น Base64 (รองรับภาษาไทย)
         const jsonString = JSON.stringify(updatedNotes, null, 2);
         const updatedContentBase64 = Buffer.from(jsonString).toString('base64');
 
-        // อัปเดตไฟล์กลับไปที่ GitHub API
         const putRes = await fetch(url, {
             method: "PUT",
             headers: {
@@ -88,7 +86,6 @@ app.post('/api/save-games', async (req, res) => {
         const filePath = "web-data/json/games-data.json";
         const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${filePath}`;
 
-        // ดึง sha ล่าสุดของไฟล์
         const getRes = await fetch(url, {
             headers: { 
                 "Authorization": `Bearer ${GITHUB_TOKEN}`,
@@ -100,11 +97,9 @@ app.post('/api/save-games', async (req, res) => {
         if (!getRes.ok) throw new Error("ไม่สามารถอ่าน sha จาก GitHub ได้");
         const fileData = await getRes.json();
 
-        // แปลงข้อมูลเป็น Base64 (รองรับภาษาไทย)
         const jsonString = JSON.stringify(updatedGames, null, 2);
         const updatedContentBase64 = Buffer.from(jsonString).toString('base64');
 
-        // อัปเดตไฟล์กลับไปที่ GitHub API
         const putRes = await fetch(url, {
             method: "PUT",
             headers: {
@@ -132,7 +127,7 @@ app.post('/api/save-games', async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// 3. กำหนด PORT (ดึงจาก Render Environment หรือใช้ 3000 เมื่อรันในเครื่อง)
+// 3. กำหนด PORT
 // -------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Backend Server running on port ${PORT}`));
